@@ -13,6 +13,9 @@ export const Header = () => {
     { href: "/build-studio", label: "Build Studio" },
     { href: "/cto-as-a-service", label: "CTO as a Service" },
     { href: "/specialiststod", label: "Specialiststöd" },
+    { href: "/build-studio/idekatalog", label: "Idékatalog" },
+    { href: "/insikter", label: "Insikter" },
+    { href: "/om-axuvo", label: "Om Axuvo" },
     { href: "/kontakt", label: "Kontakt" },
   ];
 

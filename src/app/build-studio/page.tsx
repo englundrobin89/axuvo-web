@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
 import { BuildProcessAnimation } from '@/components/visuals/BuildProcessAnimation';
+import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
   Zap,
   Code2,
@@ -234,27 +235,29 @@ export default function BuildStudioPage() {
       {/* GEO Summary Section */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="max-w-3xl">
-            <h2 className="text-2xl lg:text-3xl font-semibold text-white mb-4">
-              Vad är Build Studio?
-            </h2>
-            <p className="text-lg text-silver mb-6">
-              Build Studio är Axuvos sätt att bygga digitala lösningar för företag
-              och människor. Vi jobbar i tre tydliga steg: först ett gratis
-              blueprint-möte där vi förstår dina behov, sedan ett fast bygge med
-              full kvalitet och säkerhet, och till sist ett månadsupplagg för drift
-              och vidareutveckling. Priserna startar från 25 000 kr för mindre
-              lösningar.
-            </p>
-            <Button
-              variant="secondary"
-              size="md"
-              as="link"
-              href="/kontakt"
-            >
-              Starta ett blueprint-möte
-            </Button>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="max-w-3xl">
+              <h2 className="text-2xl lg:text-3xl font-semibold text-white mb-4">
+                Vad är Build Studio?
+              </h2>
+              <p className="text-lg text-silver mb-6">
+                Build Studio är Axuvos sätt att bygga digitala lösningar för företag
+                och människor. Vi jobbar i tre tydliga steg: först ett gratis
+                blueprint-möte där vi förstår dina behov, sedan ett fast bygge med
+                full kvalitet och säkerhet, och till sist ett månadsupplagg för drift
+                och vidareutveckling. Priserna startar från 25 000 kr för mindre
+                lösningar.
+              </p>
+              <Button
+                variant="secondary"
+                size="md"
+                as="link"
+                href="/kontakt"
+              >
+                Starta ett blueprint-möte
+              </Button>
+            </div>
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -264,16 +267,22 @@ export default function BuildStudioPage() {
       {/* Process Steps */}
       <section className="py-12 lg:py-16">
         <Container>
-          <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
-            Tre steg till din lösning
-          </h2>
-          <p className="text-silver text-center max-w-xl mx-auto mb-12">
-            Från gratis blueprint till produktionsklar lösning med löpande förvaltning.
-          </p>
+          <ScrollReveal variant="fade-up">
+            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
+              Tre steg till din lösning
+            </h2>
+            <p className="text-silver text-center max-w-xl mx-auto mb-12">
+              Från gratis blueprint till produktionsklar lösning med löpande förvaltning.
+            </p>
+          </ScrollReveal>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <ProcessSteps steps={processSteps} />
+            <ScrollReveal variant="fade-up" delay={100}>
+              <ProcessSteps steps={processSteps} />
+            </ScrollReveal>
             <div className="hidden lg:flex items-center justify-center pt-8">
-              <BuildProcessAnimation />
+              <ScrollReveal variant="fade-up" delay={200}>
+                <BuildProcessAnimation />
+              </ScrollReveal>
             </div>
           </div>
         </Container>
@@ -285,17 +294,19 @@ export default function BuildStudioPage() {
       {/* Idea Catalog Section */}
       <section id="ideas" className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="mb-12">
-            <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4">
-              Vad kan vi bygga?
-            </h2>
-            <p className="text-lg text-silver max-w-2xl">
-              Vi har byggt allt från enkla bokningsappar till komplexa SaaS-produkter.
-              Här är några exempel på lösningar vi kan realisera för dig.
-            </p>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Vad kan vi bygga?
+              </h2>
+              <p className="text-lg text-silver max-w-2xl">
+                Vi har byggt allt från enkla bokningsappar till komplexa SaaS-produkter.
+                Här är några exempel på lösningar vi kan realisera för dig.
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {ideaCards.map((card, index) => (
               <div
                 key={index}
@@ -311,18 +322,20 @@ export default function BuildStudioPage() {
                 <p className="text-silver text-sm">{card.description}</p>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
 
-          <div className="mt-12 text-center">
-            <Button
-              variant="primary"
-              size="lg"
-              as="link"
-              href="/build-studio/idekatalog"
-            >
-              Se hela idékatalogen
-            </Button>
-          </div>
+          <ScrollReveal variant="fade-up" delay={600}>
+            <div className="mt-12 text-center">
+              <Button
+                variant="primary"
+                size="lg"
+                as="link"
+                href="/build-studio/idekatalog"
+              >
+                Se hela idékatalogen
+              </Button>
+            </div>
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -332,16 +345,20 @@ export default function BuildStudioPage() {
       {/* Pricing Section */}
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="mb-12">
-            <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
-              Förvaltning efter leverans
-            </h2>
-            <p className="text-lg text-silver max-w-2xl mx-auto text-center">
-              Efter vi har levererat din lösning går du in i ett flexibelt
-              månadsupplägg. Välj det paket som passar din tillväxt.
-            </p>
-          </div>
-          <PricingTable packages={pricingPackages} />
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
+                Förvaltning efter leverans
+              </h2>
+              <p className="text-lg text-silver max-w-2xl mx-auto text-center">
+                Efter vi har levererat din lösning går du in i ett flexibelt
+                månadsupplägg. Välj det paket som passar din tillväxt.
+              </p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={100}>
+            <PricingTable packages={pricingPackages} />
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -350,7 +367,9 @@ export default function BuildStudioPage() {
 
       {/* Secure by Design */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <SecureByDesign title="Säkerhet är inbyggt" />
+        <ScrollReveal variant="fade-up">
+          <SecureByDesign title="Säkerhet är inbyggt" />
+        </ScrollReveal>
       </section>
 
       {/* Divider */}
@@ -359,10 +378,12 @@ export default function BuildStudioPage() {
       {/* FAQ Section */}
       <section className="py-12 lg:py-16">
         <Container>
-          <FAQ
-            items={faqItems}
-            sectionTitle="Vanliga frågor om Build Studio"
-          />
+          <ScrollReveal variant="fade-up">
+            <FAQ
+              items={faqItems}
+              sectionTitle="Vanliga frågor om Build Studio"
+            />
+          </ScrollReveal>
         </Container>
       </section>
 

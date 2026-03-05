@@ -6,6 +6,7 @@ import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
   Lightbulb,
   Code,
@@ -182,17 +183,19 @@ export default function Specialiststod() {
       {/* What is Specialist Support */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="max-w-3xl">
-            <Badge className="mb-4">
-              Vad är specialiststöd?
-            </Badge>
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
-              Spetskompetens när du behöver den
-            </h2>
-            <p className="text-lg text-silver">
-              Du har ett team som gör bra saker, men ibland behöver du extra firepower eller en second opinion. Vi erbjuder riktad experthjälp — inte klassisk bemanning, utan sprintar, granskning, utbildning och rådgivning från erfarna specialister.
-            </p>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="max-w-3xl">
+              <Badge className="mb-4">
+                Vad är specialiststöd?
+              </Badge>
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
+                Spetskompetens när du behöver den
+              </h2>
+              <p className="text-lg text-silver">
+                Du har ett team som gör bra saker, men ibland behöver du extra firepower eller en second opinion. Vi erbjuder riktad experthjälp — inte klassisk bemanning, utan sprintar, granskning, utbildning och rådgivning från erfarna specialister.
+              </p>
+            </div>
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -202,13 +205,15 @@ export default function Specialiststod() {
       {/* Specialist Roles */}
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
-              Roller vi tillför
-            </h2>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
+                Roller vi tillför
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {specialistRoles.map((role, index) => (
               <div
                 key={index}
@@ -221,7 +226,7 @@ export default function Specialiststod() {
                 <p className="text-silver text-sm">{role.description}</p>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </Container>
       </section>
 
@@ -231,16 +236,18 @@ export default function Specialiststod() {
       {/* Services */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-              Tjänster
-            </h2>
-            <p className="text-silver max-w-2xl">
-              Vi erbjuder flexibla engagemangsmodeller beroende på dina behov.
-            </p>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Tjänster
+              </h2>
+              <p className="text-silver max-w-2xl">
+                Vi erbjuder flexibla engagemangsmodeller beroende på dina behov.
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {services.map((service, index) => (
               <div
                 key={index}
@@ -253,7 +260,7 @@ export default function Specialiststod() {
                 <p className="text-silver">{service.description}</p>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </Container>
       </section>
 
@@ -263,13 +270,15 @@ export default function Specialiststod() {
       {/* Pricing */}
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
-              Prissättning
-            </h2>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
+                Prissättning
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Löpande Resurs */}
             <div className="bg-navy-mid border border-white/5 rounded-xl p-8">
               <h3 className="text-2xl font-semibold text-white mb-2">
@@ -319,7 +328,7 @@ export default function Specialiststod() {
                 Berätta om uppdraget
               </Button>
             </div>
-          </div>
+          </StaggerReveal>
         </Container>
       </section>
 
@@ -328,7 +337,9 @@ export default function Specialiststod() {
 
       {/* FAQ */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <FAQ items={specialistFaq} sectionTitle="Vanliga frågor om specialiststöd" />
+        <ScrollReveal variant="fade-up">
+          <FAQ items={specialistFaq} sectionTitle="Vanliga frågor om specialiststöd" />
+        </ScrollReveal>
       </section>
 
       {/* Divider */}

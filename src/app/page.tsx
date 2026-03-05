@@ -7,6 +7,7 @@ import { FAQ } from '@/components/sections/FAQ';
 import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
+import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
 import {
   Blocks,
@@ -225,21 +226,22 @@ export default function Home() {
       />
 
       {/* Quick Summary Section */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
-            <div>
-              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
-                Vad gör Axuvo?
-              </h2>
-              <p className="text-silver text-lg">
-                Vi bygger appar och system, leder som inhyrd CTO och förstärker team med spetskompetens. Allt börjar med ett gratis möte.
-              </p>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16">
+          <Container>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+              <div>
+                <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
+                  Vad gör Axuvo?
+                </h2>
+                <p className="text-silver text-lg">
+                  Vi bygger appar och system, leder som inhyrd CTO och förstärker team med spetskompetens. Allt börjar med ett gratis möte.
+                </p>
+              </div>
+              <div className="hidden lg:block">
+                <FloatingUICards />
+              </div>
             </div>
-            <div className="hidden lg:block">
-              <FloatingUICards />
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex gap-4">
@@ -290,55 +292,59 @@ export default function Home() {
           </div>
         </Container>
       </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Three Service Pillars */}
-      <ThreeColumns items={threeColumnsItems} />
+      <ScrollReveal variant="fade-up">
+        <ThreeColumns items={threeColumnsItems} />
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Example Solutions Section */}
-      <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-              Exempel från vår idékatalog
-            </h2>
-            <p className="text-silver max-w-2xl">
-              Detta är realistiska exempel på projekt vi byggt eller kan bygga.
-              Allt börjar med ett gratis möte där vi skissar ut exakt vad som
-              behövs.
-            </p>
-          </div>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16 bg-navy-mid/30">
+          <Container>
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Exempel från vår idékatalog
+              </h2>
+              <p className="text-silver max-w-2xl">
+                Detta är realistiska exempel på projekt vi byggt eller kan bygga.
+                Allt börjar med ett gratis möte där vi skissar ut exakt vad som
+                behövs.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {solutionExamples.map((solution, index) => (
-              <div
-                key={index}
-                className="bg-navy-mid border border-white/5 rounded-lg p-6 hover:border-mint/20 transition-colors duration-200"
-              >
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {solution.title}
-                </h3>
-                <p className="text-silver text-sm mb-4">
-                  {solution.description}
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-mint font-semibold">
-                    {solution.minPrice}k
-                  </span>
-                  <span className="text-silver text-sm">—</span>
-                  <span className="text-mint font-semibold">
-                    {solution.maxPrice}k
-                  </span>
-                  <span className="text-silver text-sm">SEK</span>
+            <StaggerReveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {solutionExamples.map((solution, index) => (
+                <div
+                  key={index}
+                  className="bg-navy-mid border border-white/5 rounded-lg p-6 hover:border-mint/20 transition-colors duration-200"
+                >
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {solution.title}
+                  </h3>
+                  <p className="text-silver text-sm mb-4">
+                    {solution.description}
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-mint font-semibold">
+                      {solution.minPrice}k
+                    </span>
+                    <span className="text-silver text-sm">—</span>
+                    <span className="text-mint font-semibold">
+                      {solution.maxPrice}k
+                    </span>
+                    <span className="text-silver text-sm">SEK</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </StaggerReveal>
 
           <div className="mt-10 flex justify-center">
             <Button
@@ -354,92 +360,103 @@ export default function Home() {
           </div>
         </Container>
       </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Process Steps */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-              Så arbetar vi
-            </h2>
-            <p className="text-silver max-w-2xl">
-              Från första möte till långsiktig förvaltning — en väl proven process
-              som levererar resultat.
-            </p>
-          </div>
-          <ProcessSteps steps={processSteps} />
-        </Container>
-      </section>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16">
+          <Container>
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Så arbetar vi
+              </h2>
+              <p className="text-silver max-w-2xl">
+                Från första möte till långsiktig förvaltning — en väl proven process
+                som levererar resultat.
+              </p>
+            </div>
+            <ProcessSteps steps={processSteps} />
+          </Container>
+        </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Secure by Design */}
-      <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <SecureByDesign title="Säkerhet inbyggt från start" />
-      </section>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16 bg-navy-mid/30">
+          <SecureByDesign title="Säkerhet inbyggt från start" />
+        </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Differentiators Section */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-              Varför Axuvo?
-            </h2>
-            <p className="text-silver max-w-2xl">
-              Så här skiljer vi oss från andra vägar att lösa dina digitala
-              behov.
-            </p>
-          </div>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16">
+          <Container>
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Varför Axuvo?
+              </h2>
+              <p className="text-silver max-w-2xl">
+                Så här skiljer vi oss från andra vägar att lösa dina digitala
+                behov.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {differentiators.map((item, index) => (
-              <div
-                key={index}
-                className="bg-navy-mid border border-white/5 rounded-lg p-8 hover:border-mint/20 transition-colors duration-200"
-              >
-                <div className="flex items-start gap-3 mb-4">
-                  <CheckCircle className="w-5 h-5 text-mint flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">
-                      {item.title}
-                    </h3>
-                    <p className="text-mint font-medium text-sm mt-1">
-                      {item.subtitle}
-                    </p>
+            <StaggerReveal className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {differentiators.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-navy-mid border border-white/5 rounded-lg p-8 hover:border-mint/20 transition-colors duration-200"
+                >
+                  <div className="flex items-start gap-3 mb-4">
+                    <CheckCircle className="w-5 h-5 text-mint flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">
+                        {item.title}
+                      </h3>
+                      <p className="text-mint font-medium text-sm mt-1">
+                        {item.subtitle}
+                      </p>
+                    </div>
                   </div>
+                  <p className="text-silver ml-8">{item.description}</p>
                 </div>
-                <p className="text-silver ml-8">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
+              ))}
+            </StaggerReveal>
+          </Container>
+        </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* FAQ Section */}
-      <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <FAQ items={faqItems} sectionTitle="Vanliga frågor" />
-      </section>
+      <ScrollReveal variant="fade-up">
+        <section className="py-12 lg:py-16 bg-navy-mid/30">
+          <FAQ items={faqItems} sectionTitle="Vanliga frågor" />
+        </section>
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Contact CTA */}
-      <ContactCTA
-        title="Redo att bygga något bra?"
-        description="Boka ett gratis möte (~1 timme) och få en klickbar prototyp inom 48 timmar. Ingen risk, ingen kostnad, bara resultat."
-        ctaText="Boka möte"
-        ctaHref="/kontakt"
-      />
+      <ScrollReveal variant="fade-up">
+        <ContactCTA
+          title="Redo att bygga något bra?"
+          description="Boka ett gratis möte (~1 timme) och få en klickbar prototyp inom 48 timmar. Ingen risk, ingen kostnad, bara resultat."
+          ctaText="Boka möte"
+          ctaHref="/kontakt"
+        />
+      </ScrollReveal>
     </>
   );
 }

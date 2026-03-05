@@ -7,6 +7,7 @@ import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
 import { CTORadar } from '@/components/visuals/CTORadar';
+import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
   Target,
   Zap,
@@ -213,17 +214,19 @@ export default function CTOAsAService() {
       {/* What is CTO as a Service */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="max-w-3xl">
-            <Badge className="mb-4">
-              Vad är CTO as a Service?
-            </Badge>
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
-              Teknisk ledarskap utan att anställa
-            </h2>
-            <p className="text-lg text-silver">
-              Axuvo erbjuder tekniskt ledarskap på deltid. En inhyrd CTO hjälper ditt bolag fatta rätt teknikbeslut, lägga digital plan och navigera framåt. Du får en erfaren teknisk ledare som förstår både kod och affär — utan kostnaden för heltidsanställning.
-            </p>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="max-w-3xl">
+              <Badge className="mb-4">
+                Vad är CTO as a Service?
+              </Badge>
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
+                Teknisk ledarskap utan att anställa
+              </h2>
+              <p className="text-lg text-silver">
+                Axuvo erbjuder tekniskt ledarskap på deltid. En inhyrd CTO hjälper ditt bolag fatta rätt teknikbeslut, lägga digital plan och navigera framåt. Du får en erfaren teknisk ledare som förstår både kod och affär — utan kostnaden för heltidsanställning.
+              </p>
+            </div>
+          </ScrollReveal>
         </Container>
       </section>
 
@@ -234,20 +237,22 @@ export default function CTOAsAService() {
       <section className="py-12 lg:py-16">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
-            <div>
-              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-                Vad en inhyrd CTO gör
-              </h2>
-              <p className="text-silver">
-                En CTO från Axuvo tar helhetsansvar för teknik, digitalisering och riktning. Sex ansvarsområden — ett tydligt uppdrag.
-              </p>
-            </div>
-            <div className="hidden lg:block">
+            <ScrollReveal variant="slide-left">
+              <div>
+                <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                  Vad en inhyrd CTO gör
+                </h2>
+                <p className="text-silver">
+                  En CTO från Axuvo tar helhetsansvar för teknik, digitalisering och riktning. Sex ansvarsområden — ett tydligt uppdrag.
+                </p>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal variant="slide-right" className="hidden lg:block">
               <CTORadar />
-            </div>
+            </ScrollReveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {ctoServices.map((service, index) => (
               <div
                 key={index}
@@ -260,7 +265,7 @@ export default function CTOAsAService() {
                 <p className="text-silver">{service.description}</p>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </Container>
       </section>
 
@@ -270,16 +275,18 @@ export default function CTOAsAService() {
       {/* When You Need a CTO */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-              När behöver du en inhyrd CTO?
-            </h2>
-            <p className="text-silver max-w-2xl">
-              Ibland räcker det inte med ett utvecklarteam. Du behöver någon som ser helheten.
-            </p>
-          </div>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                När behöver du en inhyrd CTO?
+              </h2>
+              <p className="text-silver max-w-2xl">
+                Ibland räcker det inte med ett utvecklarteam. Du behöver någon som ser helheten.
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {scenarios.map((scenario, index) => (
               <div
                 key={index}
@@ -292,7 +299,7 @@ export default function CTOAsAService() {
                 <p className="text-silver text-sm">{scenario.description}</p>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </Container>
       </section>
 
@@ -300,14 +307,18 @@ export default function CTOAsAService() {
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Pricing */}
-      <PricingTable packages={ctoPricing} />
+      <ScrollReveal variant="fade-up">
+        <PricingTable packages={ctoPricing} />
+      </ScrollReveal>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* FAQ */}
       <section className="py-12 lg:py-16 bg-navy-mid/30">
-        <FAQ items={ctoFaq} sectionTitle="Vanliga frågor om CTO as a Service" />
+        <ScrollReveal variant="fade-up">
+          <FAQ items={ctoFaq} sectionTitle="Vanliga frågor om CTO as a Service" />
+        </ScrollReveal>
       </section>
 
       {/* Divider */}

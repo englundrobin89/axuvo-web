@@ -16,16 +16,16 @@ export const Footer = () => {
     company: {
       heading: "Företaget",
       links: [
-        { href: "#", label: "Om Axuvo" },
-        { href: "#", label: "Insikter" },
+        { href: "/om-axuvo", label: "Om Axuvo" },
+        { href: "/insikter", label: "Insikter" },
         { href: "/kontakt", label: "Kontakt" },
       ],
     },
     legal: {
       heading: "Juridiskt",
       links: [
-        { href: "#", label: "Integritet" },
-        { href: "#", label: "Cookies" },
+        { href: "/integritet", label: "Integritet" },
+        { href: "/cookies", label: "Cookies" },
       ],
     },
   };
@@ -53,7 +53,7 @@ export const Footer = () => {
 
           {/* Column 2: Services */}
           <div>
-            <h3 className="text-white font-medium text-sm mb-4">
+            <h3 className="text-white font-bold text-sm mb-4">
               {footerLinks.services.heading}
             </h3>
             <ul className="space-y-3">
@@ -72,7 +72,7 @@ export const Footer = () => {
 
           {/* Column 3: Company */}
           <div>
-            <h3 className="text-white font-medium text-sm mb-4">
+            <h3 className="text-white font-bold text-sm mb-4">
               {footerLinks.company.heading}
             </h3>
             <ul className="space-y-3">
@@ -91,7 +91,7 @@ export const Footer = () => {
 
           {/* Column 4: Legal */}
           <div>
-            <h3 className="text-white font-medium text-sm mb-4">
+            <h3 className="text-white font-bold text-sm mb-4">
               {footerLinks.legal.heading}
             </h3>
             <ul className="space-y-3">
