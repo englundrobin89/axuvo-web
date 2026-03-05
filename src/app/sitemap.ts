@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { articles } from "@/data/articles";
+import { authors } from "@/data/authors";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://axuvo.se";
@@ -16,13 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "komplett-plattform",
   ];
 
-  const ideaPages = ideaSlugs.map((slug) => ({
-    url: `${baseUrl}/build-studio/idekatalog/${slug}`,
-    lastModified,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
-
   return [
     // Huvudsidor
     { url: baseUrl, lastModified, changeFrequency: "weekly", priority: 1.0 },
@@ -38,7 +33,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/build-studio/idekatalog`, lastModified, changeFrequency: "weekly", priority: 0.8 },
 
     // Idékatalog detaljer
-    ...ideaPages,
+    ...ideaSlugs.map((slug) => ({
+      url: `${baseUrl}/build-studio/idekatalog/${slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
 
     // CTO undersidor
     { url: `${baseUrl}/cto-as-a-service/vad-gor-en-inhyrd-cto`, lastModified, changeFrequency: "monthly", priority: 0.8 },
@@ -52,9 +52,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/specialiststod/utbildning`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/specialiststod/radgivning`, lastModified, changeFrequency: "monthly", priority: 0.8 },
 
+    // Insikter artiklar
+    { url: `${baseUrl}/insikter`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    ...articles.map((article) => ({
+      url: `${baseUrl}/insikter/${article.slug}`,
+      lastModified: new Date(article.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+
+    // Författarprofiler
+    ...authors.map((author) => ({
+      url: `${baseUrl}/om-axuvo/${author.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+
     // Övriga sidor
     { url: `${baseUrl}/om-axuvo`, lastModified, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/insikter`, lastModified, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/integritet`, lastModified, changeFrequency: "yearly", priority: 0.3 },
     { url: `${baseUrl}/cookies`, lastModified, changeFrequency: "yearly", priority: 0.3 },
   ];

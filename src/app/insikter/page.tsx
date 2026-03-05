@@ -98,10 +98,13 @@ export default function Insikter() {
                     {article.description}
                   </p>
 
-                  <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-slate text-xs">
-                      <Calendar className="w-3 h-3" />
-                      <span>{formatDate(article.publishedAt)}</span>
+                  <div className="pt-4 border-t border-white/5 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate text-xs">{article.author}</span>
+                      <div className="flex items-center gap-1 text-slate text-xs">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(article.publishedAt)}</span>
+                      </div>
                     </div>
                     <span className="text-mint text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
                       Läs mer <ArrowRight className="w-4 h-4" />

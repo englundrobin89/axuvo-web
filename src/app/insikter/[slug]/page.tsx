@@ -6,6 +6,8 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { articles, getArticleBySlug } from '@/data/articles';
+import { getAuthorById } from '@/data/authors';
+import AuthorBio from '@/components/sections/AuthorBio';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock, Calendar, User } from 'lucide-react';
 
@@ -226,6 +228,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </ScrollReveal>
         </div>
+
+        {/* Author Bio */}
+        {(() => {
+          const author = getAuthorById(article.authorId);
+          return author ? (
+            <div className="max-w-3xl mx-auto mb-16">
+              <AuthorBio author={author} />
+            </div>
+          ) : null;
+        })()}
 
         {/* Related Service CTA */}
         {article.relatedService && (
