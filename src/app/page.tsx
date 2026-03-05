@@ -208,6 +208,7 @@ export default function Home() {
           },
         ]}
       />
+      <FAQPageJsonLd items={faqItems} />
 
       {/* Hero Section */}
       <Hero

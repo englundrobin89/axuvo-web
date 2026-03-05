@@ -8,7 +8,7 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import { BuildProcessAnimation } from '@/components/visuals/BuildProcessAnimation';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
@@ -211,6 +211,7 @@ export default function BuildStudioPage() {
           { name: 'Build Studio', url: 'https://axuvo.se/build-studio' },
         ]}
       />
+      <FAQPageJsonLd items={faqItems} />
 
       {/* Hero Section */}
       <Hero

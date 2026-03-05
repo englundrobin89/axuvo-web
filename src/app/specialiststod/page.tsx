@@ -163,6 +163,7 @@ export default function Specialiststod() {
           },
         ]}
       />
+      <FAQPageJsonLd items={specialistFaq} />
 
       {/* Hero Section */}
       <Hero

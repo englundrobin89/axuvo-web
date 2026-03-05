@@ -5,7 +5,7 @@ import { FAQ } from '@/components/sections/FAQ';
 import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
-import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import { CTORadar } from '@/components/visuals/CTORadar';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
@@ -194,6 +194,7 @@ export default function CTOAsAService() {
           },
         ]}
       />
+      <FAQPageJsonLd items={ctoFaq} />
 
       {/* Hero Section */}
       <Hero
