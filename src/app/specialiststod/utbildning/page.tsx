@@ -304,7 +304,7 @@ export default function Utbildning() {
               <div className="space-y-6">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-navy-dark font-semibold text-sm">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-midnight font-semibold text-sm">
                       1
                     </span>
                   </div>
@@ -319,7 +319,7 @@ export default function Utbildning() {
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-navy-dark font-semibold text-sm">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-midnight font-semibold text-sm">
                       2
                     </span>
                   </div>
@@ -334,7 +334,7 @@ export default function Utbildning() {
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-navy-dark font-semibold text-sm">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-midnight font-semibold text-sm">
                       3
                     </span>
                   </div>
@@ -349,7 +349,7 @@ export default function Utbildning() {
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-navy-dark font-semibold text-sm">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full bg-mint text-midnight font-semibold text-sm">
                       4
                     </span>
                   </div>

@@ -63,7 +63,7 @@ interface IdeaCardProps {
 function IdeaCard({ title, description, priceRange, icon, slug }: IdeaCardProps) {
   return (
     <Link href={`/build-studio/idekatalog/${slug}`}>
-      <div className="bg-navy-mid rounded-xl p-6 border border-white/10 hover:border-mint/30 hover:bg-navy-dark transition-all duration-200 cursor-pointer h-full flex flex-col">
+      <div className="bg-navy-mid rounded-xl p-6 border border-white/10 hover:border-mint/30 hover:bg-navy-mid/80 transition-all duration-200 cursor-pointer h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <div className="text-mint">{icon}</div>
           <Badge className="text-xs">{priceRange} kr</Badge>

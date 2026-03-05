@@ -100,7 +100,7 @@ export default async function IdeaDetailPage({ params }: IdeaPageProps) {
       {/* Back Button */}
       <div className="py-6 bg-navy-mid/20 border-b border-white/5">
         <Container>
-          <Link href="/build-studio/idekatalog" className="inline-flex items-center gap-2 text-mint hover:text-mint-light transition-colors">
+          <Link href="/build-studio/idekatalog" className="inline-flex items-center gap-2 text-mint hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span>Tillbaka till idékatalogen</span>
           </Link>

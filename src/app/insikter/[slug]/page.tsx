@@ -54,7 +54,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <Container>
         <div className="py-20 text-center">
           <h1 className="text-3xl font-bold text-white mb-4">Article not found</h1>
-          <Link href="/insikter" className="text-mint hover:text-mint-light">
+          <Link href="/insikter" className="text-mint hover:text-white">
             Back to Insikter
           </Link>
         </div>
@@ -237,7 +237,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <p className="text-silver mb-6">{article.relatedService.description}</p>
               <Link
                 href={article.relatedService.href}
-                className="inline-flex items-center gap-2 bg-mint text-navy-dark px-6 py-3 rounded font-semibold hover:bg-mint-light transition-colors"
+                className="inline-flex items-center gap-2 bg-mint text-midnight px-6 py-3 rounded font-semibold hover:bg-mint-hover transition-colors"
               >
                 <span>Läs mer</span>
                 <ArrowRight size={18} />

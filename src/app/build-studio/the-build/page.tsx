@@ -253,9 +253,9 @@ export default function TheBuildPage() {
               {processSteps.map((step, index) => (
                 <div
                   key={index}
-                  className="bg-navy-dark rounded-lg p-8 border border-white/5 relative"
+                  className="bg-navy-mid rounded-lg p-8 border border-white/5 relative"
                 >
-                  <div className="absolute -top-4 -left-4 w-8 h-8 bg-mint rounded-full flex items-center justify-center font-semibold text-navy-dark">
+                  <div className="absolute -top-4 -left-4 w-8 h-8 bg-mint rounded-full flex items-center justify-center font-semibold text-midnight">
                     {index + 1}
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-3 mt-2">{step.title}</h3>
