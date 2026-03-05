@@ -700,7 +700,7 @@ export const articles: Article[] = [
     id: 'stada-koket-innan-ni-lagar-mat',
     title: 'Städa köket innan ni lagar mat — varför AI-resan börjar med struktur',
     slug: 'stada-koket-innan-ni-lagar-mat',
-    description: 'AI-verktyg löser inget om organisationen saknar processer, riktlinjer och säker struktur. Börja med grunderna innan ni köper licenser.',
+    description: 'AI-agenter och automationsverktyg skapar enorm potential — men bara om organisationen har processer, riktlinjer och säkerhetsstruktur på plats. Annars skalas riskerna snabbare än nyttan.',
     category: 'ai',
     categoryLabel: 'AI & Automation',
     readTime: '7 min',
@@ -710,94 +710,94 @@ export const articles: Article[] = [
     content: [
       {
         type: 'paragraph',
-        content: 'Claude Code-prenumerationer löser egentligen inget problem. Det låter provocerande, men det är sant. De senaste veckorna har jag varit i många diskussioner där jag ofta får samma fråga: Hur kan vi använda agentdriven utveckling i vår verksamhet? Och svaret är inte så enkelt som att köpa ett verktyg.'
+        content: 'Att köpa AI-verktyg löser i sig inget problem. Det kan låta provocerande, men det är en observation jag gjort upprepade gånger de senaste månaderna. I samtal med teknikledare, VD:ar och produktägare återkommer samma fråga: Hur kan vi använda agentdriven utveckling i vår verksamhet? Svaret är sällan så enkelt som en ny licens.'
       },
       {
         type: 'heading',
         level: 2,
-        content: 'Det handlar inte om verktyget'
+        content: 'Utmaningen sitter inte i tekniken'
       },
       {
         type: 'paragraph',
-        content: 'Det är förstås svårt att ge ett rakt och konstruktivt svar på hur just ert företag ska använda AI-agenter. Varje organisation har sina egna, ofta ganska unika, processer. Men det jag däremot kan säga är att den svåra delen inte är att köpa AI-licenser till sitt tech-team.'
+        content: 'Varje organisation har unika processer, och det finns inget universellt svar på hur just er verksamhet ska tillämpa AI-agenter. Däremot finns en tydlig gemensam nämnare bland de som lyckas: den avgörande investeringen är inte verktyget — det är den organisatoriska grunden det står på.'
       },
       {
         type: 'callout',
-        content: 'Det svåra är att få organisationen att samverka, minska personberoenden och bygga processer som är säkra och kompatibla med exempelvis NIS2 eller ISO 27001.'
+        content: 'Den verkliga utmaningen handlar om att få organisationen att samverka, minska personberoenden och bygga processer som är säkra och kompatibla med ramverk som NIS2 och ISO 27001.'
       },
       {
         type: 'heading',
         level: 2,
-        content: 'Resan börjar inte hos utvecklaren'
+        content: 'Förändringen börjar inte hos den enskilda utvecklaren'
       },
       {
         type: 'paragraph',
-        content: 'Mina ärliga två cent: resan börjar inte hos den enskilda utvecklaren. Den börjar i en strukturell förändring där organisationen sätter riktlinjer, policies, patterns och practices. Motsatsen till "dangerously set permissions" — för den som känner igen det uttrycket.'
+        content: 'Det är lätt att tro att AI-agenter är en fråga för utvecklingsteamet. I verkligheten börjar resan i en strukturell förändring på organisationsnivå — med tydliga riktlinjer, policies, arkitekturmönster och etablerade arbetsmetoder. Det handlar om att bygga in säkerhet och förutsägbarhet, inte att ge verktyg fritt spelrum.'
       },
       {
         type: 'paragraph',
-        content: 'En utvecklare med lite för mycket access är redan idag en risk. När en AI-agent agerar som utvecklarens förlängda arm blir den risken exponentiellt större. Agenten gör exakt det den blir tillsagd — snabbt och i stor skala. Om strukturen saknas blir resultatet kaos, inte effektivitet.'
+        content: 'En utvecklare med alltför breda behörigheter utgör redan idag en risk. När en AI-agent agerar som den utvecklarens förlängda arm multipliceras den risken. Agenten exekverar snabbt, i stor skala, och exakt enligt instruktionerna — oavsett om instruktionerna är genomtänkta eller inte. Utan rätt struktur leder det inte till effektivitet, utan till oförutsägbara resultat.'
       },
       {
         type: 'heading',
         level: 2,
-        content: 'Städa köket innan ni lagar mat'
+        content: 'Bygg grunden innan ni skalar'
       },
       {
         type: 'paragraph',
-        content: 'Mitt tips till alla som vill börja med agentdriven utveckling eller AI i sin verksamhet: börja med det mest grundläggande. Städa köket innan ni lagar mat. Det innebär att se över er kodstruktur, era tillgångsrättigheter, era deployment-processer och era säkerhetsrutiner.'
+        content: 'Rekommendationen till organisationer som vill börja med agentdriven utveckling eller AI-stödd verksamhet är enkel: börja med fundamenten. Se över kodstruktur, behörighetshantering, deployment-processer och säkerhetsrutiner innan nya verktyg introduceras.'
       },
       {
         type: 'list',
         items: [
-          'Har ni tydliga riktlinjer för vem som har access till vad?',
-          'Finns det dokumenterade processer för kodgranskning och deployment?',
-          'Är era system kompatibla med relevanta säkerhetsstandarder?',
-          'Har ni minskat personberoenden i kritiska flöden?',
-          'Finns det en teknisk riktning som hela organisationen förstår?'
+          'Finns tydliga riktlinjer för behörigheter och åtkomstkontroll?',
+          'Är processer för kodgranskning och deployment dokumenterade och efterlevda?',
+          'Uppfyller systemen relevanta säkerhetsstandarder och regulatoriska krav?',
+          'Har ni reducerat personberoenden i affärskritiska flöden?',
+          'Finns en teknisk riktning som hela organisationen förstår och arbetar efter?'
         ]
       },
       {
         type: 'paragraph',
-        content: 'Om svaret på någon av dessa frågor är nej, så är det där ni bör börja — inte med att köpa fler AI-verktyg.'
+        content: 'Om svaret på någon av dessa frågor är nej bör det åtgärdas först. AI-verktyg förstärker det som redan finns — både det goda och det bristfälliga.'
       },
       {
         type: 'heading',
         level: 2,
-        content: 'Hur Axuvo hjälper er att städa köket'
+        content: 'Hur vi arbetar med detta på Axuvo'
       },
       {
         type: 'paragraph',
-        content: 'Det är precis det här vi gör inom Specialiststöd. Vi kommer in som den utomstående blicken som ser vad ni inte ser själva. Genom QA och audits granskar vi er kodbas, arkitektur och säkerhetsrutiner. Genom rådgivning hjälper vi er att fatta rätt beslut kring processer och riktlinjer. Och genom utbildning ser vi till att teamet faktiskt kan jobba efter de nya processerna.'
+        content: 'Det här är kärnan i vårt Specialiststöd-erbjudande. Vi kommer in som en oberoende part som granskar nuläget utan interna förutfattade meningar. Genom QA och audits analyserar vi kodbas, arkitektur och säkerhetsrutiner. Genom rådgivning hjälper vi ledningen att fatta välgrundade beslut kring processer och riktlinjer. Och genom utbildning säkerställer vi att teamet kan arbeta effektivt inom den nya strukturen.'
       },
       {
         type: 'paragraph',
-        content: 'Tänk på det som att anlita en kock som först ser till att köket är rent, att verktygen är i ordning och att alla vet sina roller — innan första rätten tillagas. Det är inte lika glamoröst som att rulla ut AI-agenter, men det är det som gör att AI-satsningen faktiskt fungerar.'
+        content: 'Processen kan liknas vid att förbereda ett kök innan ett ambitiöst middagsprojekt: inventera verktygen, säkerställ att arbetsstationerna är organiserade och att alla förstår sina roller. Först därefter är det meningsfullt att börja laga mat. Det är kanske inte den mest spektakulära delen av AI-resan, men det är det som avgör om satsningen ger verklig avkastning.'
       },
       {
         type: 'callout',
-        content: 'AI utan struktur är som en sportbil utan vägmarkering. Du kommer snabbt framåt, men ingen vet åt vilket håll.'
+        content: 'AI utan organisatorisk struktur är hastighet utan riktning. Resultaten kommer snabbt — men det är omöjligt att garantera att de leder rätt.'
       }
     ],
     faqItems: [
       {
-        question: 'Kan vi inte bara börja använda AI och fixa resten senare?',
-        answer: 'Tekniskt sett, ja. Men i praktiken leder det ofta till säkerhetsproblem, inkonsistent kodkvalitet och teknisk skuld som blir dyrare att åtgärda i efterhand. Det är som att bygga våning tre innan grunden är lagd.'
+        question: 'Kan vi inte börja med AI och bygga strukturen parallellt?',
+        answer: 'Det är tekniskt möjligt, men erfarenheten visar att det ofta leder till säkerhetsproblem, inkonsistent kodkvalitet och teknisk skuld som blir kostsam att åtgärda i efterhand. En grundläggande struktur behöver inte ta lång tid — men den behöver finnas på plats innan AI-verktygen skalas upp.'
       },
       {
-        question: 'Vad menas med att "städa köket"?',
-        answer: 'Det handlar om att se över era grundläggande processer: access-hantering, kodstruktur, deployment-rutiner, dokumentation och säkerhet. Allt det som behöver vara på plats för att AI-verktyg ska kunna användas säkert och effektivt.'
+        question: 'Vad innebär det konkret att "städa köket"?',
+        answer: 'Det handlar om att inventera och förbättra era grundläggande processer: behörighetshantering, kodstruktur, deployment-rutiner, dokumentation och säkerhet. Allt det som behöver vara på plats för att AI-verktyg ska kunna användas säkert, effektivt och i enlighet med regulatoriska krav.'
       },
       {
         question: 'Hur lång tid tar det att bli redo för AI-agenter?',
-        answer: 'Det beror på var ni befinner er idag. Vissa organisationer behöver en sprint på 2-4 veckor för att få grunderna på plats. Andra behöver en djupare omstrukturering. Vi börjar alltid med en audit för att förstå nuläget.'
+        answer: 'Det varierar beroende på nuläget. Vissa organisationer behöver en fokuserad sprint på 2-4 veckor för att etablera grunderna. Andra kräver en djupare omstrukturering. Vi inleder alltid med en audit för att kartlägga var ni befinner er och vad som behöver prioriteras.'
       }
     ],
     relatedSlugs: ['teknisk-skuld', 'secure-by-design', '5-tecken-du-behover-cto'],
     relatedService: {
       title: 'Specialiststöd',
       href: '/specialiststod',
-      description: 'Vi hjälper er att städa köket — genom audits, rådgivning och utbildning som gör er organisation redo för nästa steg.'
+      description: 'Vi hjälper er bygga den grund som krävs — genom audits, rådgivning och utbildning som gör organisationen redo för nästa steg.'
     }
   },
   {
