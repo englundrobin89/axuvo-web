@@ -165,6 +165,8 @@ export default function Specialiststod() {
 
       {/* Hero Section */}
       <Hero
+        variant="service"
+        badge="Specialiststöd"
         title="Riktat stöd som ger resultat — inte klassisk bemanning"
         subtitle="Spetskompetens när du behöver den. Snabbt, flexibelt och resultatfokuserat stöd för ditt team och dina projekt."
         primaryCta={{
@@ -174,8 +176,11 @@ export default function Specialiststod() {
         trustText="Erfarna specialister • Flexibel engagemangsmodell • Resultat på dagar"
       />
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* What is Specialist Support */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="max-w-3xl">
             <Badge className="mb-4">
@@ -191,8 +196,11 @@ export default function Specialiststod() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Specialist Roles */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
@@ -217,8 +225,11 @@ export default function Specialiststod() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Services */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -246,8 +257,11 @@ export default function Specialiststod() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Pricing */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
@@ -309,10 +323,16 @@ export default function Specialiststod() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* FAQ */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <FAQ items={specialistFaq} sectionTitle="Vanliga frågor om specialiststöd" />
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Contact CTA */}
       <ContactCTA

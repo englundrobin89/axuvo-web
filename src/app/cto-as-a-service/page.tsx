@@ -195,6 +195,8 @@ export default function CTOAsAService() {
 
       {/* Hero Section */}
       <Hero
+        variant="service"
+        badge="CTO as a Service"
         title="En teknisk ledare du kan lita på — utan att anställa"
         subtitle="Axuvo erbjuder tekniskt ledarskap på deltid. En inhyrd CTO hjälper ditt bolag fatta rätt teknikbeslut, lägga digital plan och navigera framåt."
         primaryCta={{
@@ -204,8 +206,11 @@ export default function CTOAsAService() {
         trustText="Börja inom dagen • Ingen långsiktig bindning • Resultatfokuserat"
       />
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* What is CTO as a Service */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="max-w-3xl">
             <Badge className="mb-4">
@@ -221,8 +226,11 @@ export default function CTOAsAService() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* What a CTO Does */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
@@ -247,8 +255,11 @@ export default function CTOAsAService() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* When You Need a CTO */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -276,13 +287,22 @@ export default function CTOAsAService() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Pricing */}
       <PricingTable packages={ctoPricing} />
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* FAQ */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <FAQ items={ctoFaq} sectionTitle="Vanliga frågor om CTO as a Service" />
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Contact CTA */}
       <ContactCTA

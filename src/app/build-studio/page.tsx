@@ -211,25 +211,27 @@ export default function BuildStudioPage() {
       />
 
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32">
-        <div className="absolute inset-0 bg-gradient-to-b from-mint/5 to-transparent pointer-events-none" />
-        <Hero
-          title="Från idé till färdig produkt — snabbt, säkert och till fast pris"
-          subtitle="Vi bygger appar, portaler, system och arbetsflöden åt företag och människor som vill göra mer digitalt. Se resultat innan du spenderat en krona."
-          primaryCta={{
-            text: 'Boka gratis blueprint-möte',
-            href: '/kontakt',
-          }}
-          secondaryCta={{
-            text: 'Se idékatalogen',
-            href: '#ideas',
-          }}
-          trustText="Gratis prototyp inom 48h • Fast startkostnad • Säkerhet inbyggt"
-        />
-      </section>
+      <Hero
+        variant="service"
+        badge="Build Studio"
+        title="Från idé till färdig produkt — snabbt, säkert och till fast pris"
+        subtitle="Vi bygger appar, portaler, system och arbetsflöden åt företag och människor som vill göra mer digitalt. Se resultat innan du spenderat en krona."
+        primaryCta={{
+          text: 'Boka gratis blueprint-möte',
+          href: '/kontakt',
+        }}
+        secondaryCta={{
+          text: 'Se idékatalogen',
+          href: '#ideas',
+        }}
+        trustText="Gratis prototyp inom 48h • Fast startkostnad • Säkerhet inbyggt"
+      />
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* GEO Summary Section */}
-      <section className="py-12 lg:py-16 bg-navy-light">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="max-w-3xl">
             <h2 className="text-2xl lg:text-3xl font-semibold text-white mb-4">
@@ -255,8 +257,11 @@ export default function BuildStudioPage() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Process Steps */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-16 text-center">
             Tre steg till din lösning
@@ -265,8 +270,11 @@ export default function BuildStudioPage() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Idea Catalog Section */}
-      <section id="ideas" className="py-16 lg:py-24 bg-navy-light">
+      <section id="ideas" className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="mb-12">
             <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -309,8 +317,11 @@ export default function BuildStudioPage() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Pricing Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
@@ -325,13 +336,19 @@ export default function BuildStudioPage() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Secure by Design */}
-      <section className="py-16 lg:py-24 bg-navy-light">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <SecureByDesign title="Säkerhet är inbyggt" />
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* FAQ Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <FAQ
             items={faqItems}
@@ -339,6 +356,9 @@ export default function BuildStudioPage() {
           />
         </Container>
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Contact CTA */}
       <ContactCTA

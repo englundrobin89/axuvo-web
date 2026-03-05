@@ -39,6 +39,7 @@ export default function Kontakt() {
 
       {/* Hero Section */}
       <Hero
+        variant="compact"
         title="Berätta vad du behöver"
         subtitle="Fyll i formuläret eller kontakta oss direkt. Vi återkommer inom 24 timmar med ett konkret förslag."
         primaryCta={{
@@ -47,8 +48,11 @@ export default function Kontakt() {
         }}
       />
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Contact Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Form - 2/3 width */}
@@ -142,8 +146,11 @@ export default function Kontakt() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* FAQ Quick Section */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="max-w-3xl">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-12">
@@ -180,10 +187,10 @@ export default function Kontakt() {
 
               <div className="bg-navy-mid border border-white/5 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-white mb-3">
-                  Är ni confidentiality-sekretessavtal?
+                  Kan ni skriva sekretessavtal?
                 </h3>
                 <p className="text-silver text-sm">
-                  Ja. Vi signerar NDA före möte om du önskar. Din ide och din data är helt säker med oss.
+                  Ja. Vi signerar sekretessavtal (NDA) före möte om du önskar. Din idé och din data är helt säker hos oss.
                 </p>
               </div>
             </div>

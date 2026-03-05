@@ -15,27 +15,27 @@ interface SecureByDesignProps {
 const DEFAULT_PRINCIPLES: Principle[] = [
   {
     title: 'Åtkomststyrning',
-    description: 'Strict access controls and authentication mechanisms',
+    description: 'Strikt kontroll över vem som kommer åt vad — rätt person, rätt data, rätt tidpunkt.',
   },
   {
     title: 'Dataminimering',
-    description: 'Only collect and store what is necessary',
+    description: 'Vi samlar och lagrar bara det som behövs. Inget extra, inga onödiga risker.',
   },
   {
     title: 'Loggning',
-    description: 'Comprehensive logging for audit trails',
+    description: 'Allt loggas. Fullt spårbart för revision och felsökning.',
   },
   {
     title: 'Backup',
-    description: 'Regular backups and disaster recovery',
+    description: 'Regelbundna säkerhetskopior och tydlig plan om något går fel.',
   },
   {
     title: 'Uppdateringar',
-    description: 'Timely security patches and updates',
+    description: 'Säkerhetsuppdateringar och patchar tillämpas löpande.',
   },
   {
     title: 'Tydliga gränser',
-    description: 'Clear boundaries and data isolation',
+    description: 'Tydlig separation mellan system, data och användare.',
   },
 ];
 
@@ -44,7 +44,7 @@ export const SecureByDesign: React.FC<SecureByDesignProps> = ({
   principles = DEFAULT_PRINCIPLES,
 }) => {
   return (
-    <section className="py-16 lg:py-24">
+    <section className="py-12 lg:py-16">
       <Container>
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">

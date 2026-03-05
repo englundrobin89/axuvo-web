@@ -12,9 +12,9 @@ interface FAQProps {
   sectionTitle?: string;
 }
 
-export const FAQ: React.FC<FAQProps> = ({ items, sectionTitle = 'Frequently Asked Questions' }) => {
+export const FAQ: React.FC<FAQProps> = ({ items, sectionTitle = 'Vanliga frågor' }) => {
   return (
-    <section className="py-16 lg:py-24">
+    <section className="py-12 lg:py-16">
       <Container>
         <div className="max-w-3xl">
           <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-12">

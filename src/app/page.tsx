@@ -209,6 +209,8 @@ export default function Home() {
 
       {/* Hero Section */}
       <Hero
+        variant="home"
+        badge="Systembyrå för svenska företag"
         title="Vi bygger det digitala ni behöver — snabbt, säkert och utan enterprise-prislapp"
         subtitle="Axuvo hjälper företag och människor som vill göra mer digitalt men inte har tid, kunskap eller trygghet att göra det själva."
         primaryCta={{
@@ -222,8 +224,30 @@ export default function Home() {
         trustText="Gratis blueprint • Prototyp inom 48h • Säkerhet inbyggt från start"
       />
 
+      {/* Trust Bar */}
+      <div className="bg-navy-light/50 border-y border-white/5">
+        <Container>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 py-6">
+            <div className="text-center">
+              <p className="text-mint font-semibold text-lg">48h</p>
+              <p className="text-silver text-sm">till prototyp</p>
+            </div>
+            <div className="w-px h-8 bg-white/10" />
+            <div className="text-center">
+              <p className="text-mint font-semibold text-lg">Från 25 000 kr</p>
+              <p className="text-silver text-sm">Startkostnad</p>
+            </div>
+            <div className="w-px h-8 bg-white/10" />
+            <div className="text-center">
+              <p className="text-mint font-semibold text-lg">Secure by Design</p>
+              <p className="text-silver text-sm">Från dag ett</p>
+            </div>
+          </div>
+        </Container>
+      </div>
+
       {/* Quick Summary Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-10">
@@ -281,11 +305,17 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Three Service Pillars */}
       <ThreeColumns items={threeColumnsItems} />
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Example Solutions Section */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -339,8 +369,11 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Process Steps */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -355,11 +388,19 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* Secure by Design */}
-      <SecureByDesign title="Säkerhet inbyggt från start" />
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
+        <SecureByDesign title="Säkerhet inbyggt från start" />
+      </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Differentiators Section */}
-      <section className="py-16 lg:py-24 bg-navy-light/20">
+      <section className="py-12 lg:py-16">
         <Container>
           <div className="mb-12">
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
@@ -395,10 +436,16 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
       {/* FAQ Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16 bg-navy-mid/30">
         <FAQ items={faqItems} sectionTitle="Vanliga frågor" />
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Contact CTA */}
       <ContactCTA

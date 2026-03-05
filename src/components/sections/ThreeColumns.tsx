@@ -15,7 +15,7 @@ interface ThreeColumnsProps {
 
 export const ThreeColumns: React.FC<ThreeColumnsProps> = ({ items }) => {
   return (
-    <section className="py-16 lg:py-24">
+    <section className="py-12 lg:py-16">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item, index) => (
@@ -36,7 +36,7 @@ export const ThreeColumns: React.FC<ThreeColumnsProps> = ({ items }) => {
                 as="link"
                 href={item.href}
               >
-                Learn more →
+                Läs mer →
               </Button>
             </div>
           ))}

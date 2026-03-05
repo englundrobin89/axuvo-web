@@ -59,7 +59,7 @@ export const Header = () => {
           <button
             className="md:hidden p-2 rounded-lg hover:bg-navy-mid transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label="Öppna meny"
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6 text-white" />

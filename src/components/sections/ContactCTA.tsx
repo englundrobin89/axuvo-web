@@ -16,7 +16,7 @@ export const ContactCTA: React.FC<ContactCTAProps> = ({
   ctaHref,
 }) => {
   return (
-    <section className="py-16 lg:py-24 bg-navy-mid">
+    <section className="py-12 lg:py-16 bg-navy-mid">
       <Container>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
