@@ -28,7 +28,7 @@ export const Hero: React.FC<HeroProps> = ({
 }) => {
   if (variant === 'home') {
     return (
-      <section className="relative overflow-hidden pt-20 pb-16 lg:pt-32 lg:pb-24">
+      <section className="relative overflow-hidden pt-12 pb-12 lg:pt-20 lg:pb-16">
         {/* Background decorations */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-mint/5 rounded-full blur-3xl" />
