@@ -51,6 +51,11 @@ export const metadata: Metadata = {
     locale: "sv_SE",
     siteName: "Axuvo",
   },
+  twitter: {
+    card: "summary_large_image",
+    site: "@axuvo",
+    creator: "@axuvo",
+  },
   robots: {
     index: true,
     follow: true,
