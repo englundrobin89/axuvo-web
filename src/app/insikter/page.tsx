@@ -1,16 +1,13 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Hero } from '@/components/sections/Hero';
 import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { BreadcrumbJsonLd } from '@/lib/json-ld';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
-import {
-  BookOpen,
-  Zap,
-  Shield,
-  Users,
-} from 'lucide-react';
+import { articles } from '@/data/articles';
+import { ArrowRight, Clock, Calendar } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Insikter — Tankar, tips och erfarenheter från Axuvo',
@@ -27,39 +24,18 @@ export const metadata: Metadata = {
   },
 };
 
-interface ArticleCard {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  tag: string;
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('sv-SE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
-const upcomingArticles: ArticleCard[] = [
-  {
-    title: 'Så väljer du rätt teknikpartner',
-    description: 'En guide för att finna rätt partner för ditt teknikprojekt. Vad ska du fråga? Vad bör du tänka på?',
-    icon: <Users className="w-6 h-6" />,
-    tag: 'Guide',
-  },
-  {
-    title: 'Blueprint-metoden: Se resultat innan du spenderat en krona',
-    description: 'Hur du kan validera en idé snabbt och billigt innan du investerar stort. Vår provade metod.',
-    icon: <Zap className="w-6 h-6" />,
-    tag: 'Metod',
-  },
-  {
-    title: '5 tecken på att du behöver en inhyrd CTO',
-    description: 'Du undrar om du behöver en teknisk ledare? Här är fem tecken som säger att svaret är ja.',
-    icon: <BookOpen className="w-6 h-6" />,
-    tag: 'Checklista',
-  },
-  {
-    title: 'Varför Secure by Design inte är ett tillval',
-    description: 'Säkerhet är inte något du lägger på efteråt. Det måste vara inbyggt från dag ett.',
-    icon: <Shield className="w-6 h-6" />,
-    tag: 'Säkerhet',
-  },
-];
+const sortedArticles = [...articles].sort(
+  (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+);
 
 export default function Insikter() {
   return (
@@ -67,14 +43,8 @@ export default function Insikter() {
       {/* JSON-LD Structured Data */}
       <BreadcrumbJsonLd
         items={[
-          {
-            name: 'Start',
-            url: 'https://axuvo.se',
-          },
-          {
-            name: 'Insikter',
-            url: 'https://axuvo.se/insikter',
-          },
+          { name: 'Start', url: 'https://axuvo.se' },
+          { name: 'Insikter', url: 'https://axuvo.se/insikter' },
         ]}
       />
 
@@ -90,65 +60,57 @@ export default function Insikter() {
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
-      {/* Coming Soon Section */}
-      <section className="py-12 lg:py-16 bg-navy-mid/30">
+      {/* Articles Grid */}
+      <section className="py-12 lg:py-20">
         <Container>
           <ScrollReveal variant="fade-up">
             <div className="max-w-3xl mb-12">
-              <Badge className="mb-4">
-                Nya artiklar kommer snart
-              </Badge>
               <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-                Vi håller på att skriva
+                Alla artiklar
               </h2>
               <p className="text-lg text-silver">
-                Vi arbetar på en serie artiklar om teknik, strategi och digital transformation. Här är några av de ämnen vi skriver om just nu.
+                Praktiska insikter om teknik, strategi och digital transformation för beslutsfattare.
               </p>
             </div>
           </ScrollReveal>
 
-          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {upcomingArticles.map((article, index) => (
-              <div
-                key={index}
-                className="bg-navy-mid border border-white/5 rounded-lg p-8"
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedArticles.map((article) => (
+              <Link
+                key={article.id}
+                href={`/insikter/${article.slug}`}
+                className="group block"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="text-mint">{article.icon}</div>
-                  <Badge className="text-xs bg-mint/10 text-mint">{article.tag}</Badge>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {article.title}
-                </h3>
-                <p className="text-silver text-sm mb-4">{article.description}</p>
-                <div className="pt-4 border-t border-white/5">
-                  <span className="text-mint text-sm font-semibold">Kommer snart</span>
-                </div>
-              </div>
+                <article className="bg-navy-mid border border-white/5 rounded-lg p-8 h-full flex flex-col hover:border-mint/30 transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="text-xs">{article.categoryLabel}</Badge>
+                    <div className="flex items-center gap-1 text-slate text-xs">
+                      <Clock className="w-3 h-3" />
+                      <span>{article.readTime}</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-mint transition-colors">
+                    {article.title}
+                  </h3>
+
+                  <p className="text-silver text-sm mb-6 flex-grow">
+                    {article.description}
+                  </p>
+
+                  <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-slate text-xs">
+                      <Calendar className="w-3 h-3" />
+                      <span>{formatDate(article.publishedAt)}</span>
+                    </div>
+                    <span className="text-mint text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Läs mer <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </article>
+              </Link>
             ))}
           </StaggerReveal>
-        </Container>
-      </section>
-
-      {/* Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-
-      {/* Newsletter CTA */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <ScrollReveal variant="fade-up">
-            <div className="max-w-3xl">
-              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-                Håll dig uppdaterad
-              </h2>
-              <p className="text-silver mb-8">
-                Vi skriver när det finns något värt att dela. Du kan följa Axuvo för att inte missa nya artiklar och insikter.
-              </p>
-              <p className="text-silver text-sm italic">
-                Prenumerationsfunktion kommer snart.
-              </p>
-            </div>
-          </ScrollReveal>
         </Container>
       </section>
 
