@@ -9,8 +9,10 @@ import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
+import { RelatedArticles } from '@/components/sections/RelatedArticles';
 import { BuildProcessAnimation } from '@/components/visuals/BuildProcessAnimation';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
+import { getArticlesByCategory, articles as allArticles } from '@/data/articles';
 import {
   Zap,
   Code2,
@@ -387,6 +389,19 @@ export default function BuildStudioPage() {
           </ScrollReveal>
         </Container>
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Related Articles */}
+      <RelatedArticles
+        articles={[
+          ...getArticlesByCategory('build-studio'),
+          ...getArticlesByCategory('strategi'),
+        ].slice(0, 3)}
+        title="Insikter om att bygga digitalt"
+        subtitle="Läs mer om teknikval, kostnader och vår arbetsmetod."
+      />
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />

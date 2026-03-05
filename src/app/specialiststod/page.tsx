@@ -6,7 +6,9 @@ import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
+import { RelatedArticles } from '@/components/sections/RelatedArticles';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
+import { getArticlesByCategory } from '@/data/articles';
 import {
   Lightbulb,
   Code,
@@ -342,6 +344,19 @@ export default function Specialiststod() {
           <FAQ items={specialistFaq} sectionTitle="Vanliga frågor om specialiststöd" />
         </ScrollReveal>
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Related Articles */}
+      <RelatedArticles
+        articles={[
+          ...getArticlesByCategory('specialiststod'),
+          ...getArticlesByCategory('strategi'),
+        ].slice(0, 3)}
+        title="Insikter om kvalitet och teknik"
+        subtitle="Läs mer om teknisk skuld, säkerhet och rätt teknikval."
+      />
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />

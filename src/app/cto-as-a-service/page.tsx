@@ -6,7 +6,9 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
+import { RelatedArticles } from '@/components/sections/RelatedArticles';
 import { CTORadar } from '@/components/visuals/CTORadar';
+import { getArticlesByCategory } from '@/data/articles';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
   Target,
@@ -321,6 +323,19 @@ export default function CTOAsAService() {
           <FAQ items={ctoFaq} sectionTitle="Vanliga frågor om CTO as a Service" />
         </ScrollReveal>
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Related Articles */}
+      <RelatedArticles
+        articles={[
+          ...getArticlesByCategory('cto'),
+          ...getArticlesByCategory('strategi'),
+        ].slice(0, 3)}
+        title="Insikter om teknisk ledning"
+        subtitle="Läs mer om när och varför en inhyrd CTO gör skillnad."
+      />
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />

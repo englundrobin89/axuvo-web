@@ -43,7 +43,8 @@ export const PricingTable: React.FC<PricingTableProps> = ({ packages }) => {
               <Button
                 variant={pkg.highlighted ? 'primary' : 'secondary'}
                 size="md"
-                as="button"
+                as="link"
+                href="/kontakt"
                 className="w-full mb-8"
               >
                 Kom igång
