@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 60" width="320" height="60">
+  <!-- X icon -->
+  <svg x="0" y="0" width="60" height="60" viewBox="0 0 44 44">
+    <rect x="7" y="18.5" width="30" height="7" rx="3.5" transform="rotate(45 22 22)" fill="#0a1628"/>
+    <rect x="7" y="18.5" width="30" height="7" rx="3.5" transform="rotate(-45 22 22)" fill="#34d399"/>
+  </svg>
+  <!-- Wordmark -->
+  <text x="58" y="43" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="38" fill="#0a1628" letter-spacing="-1.2">axuvo</text>
+</svg>
