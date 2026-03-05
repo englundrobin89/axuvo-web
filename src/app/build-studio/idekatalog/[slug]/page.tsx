@@ -14,13 +14,12 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 
 interface IdeaPageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: IdeaPageProps): Promise<Metadata> {
-  const idea = ideas.find((i) => i.slug === params.slug);
+  const { slug } = await params;
+  const idea = ideas.find((i) => i.slug === slug);
 
   if (!idea) {
     return {
@@ -68,8 +67,9 @@ const processSteps = [
   },
 ];
 
-export default function IdeaDetailPage({ params }: IdeaPageProps) {
-  const idea = ideas.find((i) => i.slug === params.slug);
+export default async function IdeaDetailPage({ params }: IdeaPageProps) {
+  const { slug } = await params;
+  const idea = ideas.find((i) => i.slug === slug);
 
   if (!idea) {
     return (
