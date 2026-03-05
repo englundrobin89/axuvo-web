@@ -6,6 +6,7 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { CTORadar } from '@/components/visuals/CTORadar';
 import {
   Target,
   Zap,
@@ -232,10 +233,18 @@ export default function CTOAsAService() {
       {/* What a CTO Does */}
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white">
-              Vad en inhyrd CTO gör
-            </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+            <div>
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Vad en inhyrd CTO gör
+              </h2>
+              <p className="text-silver">
+                En CTO från Axuvo tar helhetsansvar för teknik, digitalisering och riktning. Sex ansvarsområden — ett tydligt uppdrag.
+              </p>
+            </div>
+            <div className="hidden lg:block">
+              <CTORadar />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

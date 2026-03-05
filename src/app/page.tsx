@@ -18,6 +18,7 @@ import {
   Lock,
   CheckCircle,
 } from 'lucide-react';
+import { FloatingUICards } from '@/components/visuals/FloatingUICards';
 
 export const metadata: Metadata = {
   title: 'Axuvo - Appar, System & CTO as a Service för svenska företag',
@@ -210,7 +211,6 @@ export default function Home() {
       {/* Hero Section */}
       <Hero
         variant="home"
-        badge="Systembyrå för svenska företag"
         title="Vi bygger det digitala ni behöver — snabbt, säkert och utan enterprise-prislapp"
         subtitle="Axuvo hjälper företag och människor som vill göra mer digitalt men inte har tid, kunskap eller trygghet att göra det själva."
         primaryCta={{
@@ -224,35 +224,21 @@ export default function Home() {
         trustText="Gratis blueprint • Prototyp inom 48h • Säkerhet inbyggt från start"
       />
 
-      {/* Trust Bar */}
-      <div className="bg-navy-light/50 border-y border-white/5">
-        <Container>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 py-6">
-            <div className="text-center">
-              <p className="text-mint font-semibold text-lg">48h</p>
-              <p className="text-silver text-sm">till prototyp</p>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="text-center">
-              <p className="text-mint font-semibold text-lg">Från 25 000 kr</p>
-              <p className="text-silver text-sm">Startkostnad</p>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="text-center">
-              <p className="text-mint font-semibold text-lg">Secure by Design</p>
-              <p className="text-silver text-sm">Från dag ett</p>
-            </div>
-          </div>
-        </Container>
-      </div>
-
       {/* Quick Summary Section */}
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="mb-12">
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-10">
-              Vad gör Axuvo?
-            </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+            <div>
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-6">
+                Vad gör Axuvo?
+              </h2>
+              <p className="text-silver text-lg">
+                Vi bygger appar och system, leder som inhyrd CTO och förstärker team med spetskompetens. Allt börjar med ett gratis möte.
+              </p>
+            </div>
+            <div className="hidden lg:block">
+              <FloatingUICards />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

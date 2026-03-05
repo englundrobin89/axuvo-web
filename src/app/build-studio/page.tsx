@@ -9,6 +9,7 @@ import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { BuildProcessAnimation } from '@/components/visuals/BuildProcessAnimation';
 import {
   Zap,
   Code2,
@@ -263,10 +264,18 @@ export default function BuildStudioPage() {
       {/* Process Steps */}
       <section className="py-12 lg:py-16">
         <Container>
-          <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-16 text-center">
+          <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4 text-center">
             Tre steg till din lösning
           </h2>
-          <ProcessSteps steps={processSteps} />
+          <p className="text-silver text-center max-w-xl mx-auto mb-12">
+            Från gratis blueprint till produktionsklar lösning med löpande förvaltning.
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <ProcessSteps steps={processSteps} />
+            <div className="hidden lg:flex items-center justify-center pt-8">
+              <BuildProcessAnimation />
+            </div>
+          </div>
         </Container>
       </section>
 
