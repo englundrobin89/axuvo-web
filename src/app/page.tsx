@@ -8,7 +8,7 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
-import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import {
   Blocks,
   Shield,

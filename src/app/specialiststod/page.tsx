@@ -5,7 +5,7 @@ import { ContactCTA } from '@/components/sections/ContactCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { ServiceJsonLd, BreadcrumbJsonLd } from '@/lib/json-ld';
+import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import {
   Lightbulb,
