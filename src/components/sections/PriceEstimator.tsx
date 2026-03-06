@@ -145,7 +145,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   function EstimateCard({ estimate }: { estimate: EstimateResult }) {
     return (
       <div className="mt-3 space-y-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="bg-midnight/60 rounded-lg p-3">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Layers className="w-3 h-3" /> Komplexitet
@@ -223,19 +223,19 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
 
         {/* Confirm/deny buttons — show when we have a pending estimate */}
         {pendingEstimate && !loading && (
-          <div className="flex flex-col gap-2 pl-10">
+          <div className="flex flex-col gap-2 pl-0 sm:pl-10">
             <p className="text-xs text-slate">Har vi förstått din idé rätt?</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={handleConfirm}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-mint/10 border border-mint/20 text-mint text-sm font-medium hover:bg-mint/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-mint/10 border border-mint/20 text-mint text-sm font-medium hover:bg-mint/20 transition-colors cursor-pointer"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Ja, visa prisförslag
               </button>
               <button
                 onClick={() => inputRef.current?.focus()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-silver text-sm hover:bg-white/10 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-silver text-sm hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Nej, jag förtydligar
               </button>
@@ -248,7 +248,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           <div className="space-y-2">
             <button
               onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
+              className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover cursor-pointer"
             >
               Boka ett gratis blueprint-möte
               <ArrowRight className="w-3.5 h-3.5" />
@@ -333,7 +333,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     <div className="max-w-3xl mx-auto">
       <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40 focus-within:shadow-[0_0_40px_-12px_rgba(52,211,153,0.15)]">
         {messages.length > 0 && (
-          <div ref={chatContainerRef} className="max-h-[500px] overflow-y-auto p-6 space-y-5">
+          <div ref={chatContainerRef} className="max-h-[500px] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
             {renderMessages('lg')}
           </div>
         )}
@@ -350,7 +350,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 : 'Förtydliga eller berätta mer...'
               }
               rows={messages.length === 0 ? 3 : 1}
-              className="flex-1 bg-transparent text-white placeholder-slate/60 px-2 py-2 text-lg resize-none focus:outline-none"
+              className="flex-1 bg-transparent text-white placeholder-slate/60 px-2 py-2 text-base sm:text-lg resize-none focus:outline-none"
               style={{ maxHeight: '150px' }}
               disabled={loading}
             />

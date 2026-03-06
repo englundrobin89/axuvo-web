@@ -151,7 +151,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
       {/* Modal */}
       <div
         ref={modalRef}
-        className="relative bg-[#0f1a2e] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-[#0f1a2e] border border-white/10 rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
         role="dialog"
         aria-labelledby="booking-title"
       >
@@ -174,7 +174,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
           <div className="bg-navy-mid rounded-xl border border-white/5 p-5 mb-6">
             <span className="text-sm font-medium text-mint mb-4 block">Din prisuppskattning</span>
 
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
               <div>
                 <p className="text-xs text-slate mb-1">Komplexitet</p>
                 <span className={`inline-block text-sm font-medium px-2 py-0.5 rounded border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
