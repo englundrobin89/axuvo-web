@@ -16,10 +16,11 @@ interface BookingModalProps {
   onClose: () => void;
   estimate: EstimateResult;
   description: string;
+  chatHistory?: { role: string; content: string }[];
 }
 
 
-export function BookingModal({ isOpen, onClose, estimate, description }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, estimate, description, chatHistory }: BookingModalProps) {
   const [namn, setNamn] = useState('');
   const [email, setEmail] = useState('');
   const [telefon, setTelefon] = useState('');
@@ -85,12 +86,15 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
           estimate: {
             complexity: estimate.complexity,
             priceRange: estimate.priceRange,
+            priceMin: estimate.priceMin,
+            priceMax: estimate.priceMax,
             timelineWeeks: estimate.timelineWeeks,
             features: estimate.features,
             recommendations: estimate.recommendations,
             summary: estimate.summary,
             monthlyFrom: estimate.monthlyFrom,
           },
+          chatHistory,
         }),
       });
 
@@ -101,7 +105,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
     } finally {
       setSubmitting(false);
     }
-  }, [namn, email, telefon, foretag, description, estimate]);
+  }, [namn, email, telefon, foretag, description, estimate, chatHistory]);
 
   if (!isOpen) return null;
 
