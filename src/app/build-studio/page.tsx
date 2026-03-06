@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { ServiceJsonLd, BreadcrumbJsonLd, FAQPageJsonLd } from '@/lib/json-ld';
 import { RelatedArticles } from '@/components/sections/RelatedArticles';
 import { BuildProcessAnimation } from '@/components/visuals/BuildProcessAnimation';
+import PriceEstimator from '@/components/sections/PriceEstimator';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
 import { getArticlesByCategory, articles as allArticles } from '@/data/articles';
 import {
@@ -231,6 +232,30 @@ export default function BuildStudioPage() {
         }}
         trustText="Gratis prototyp inom 48h • Fast startkostnad • Säkerhet inbyggt"
       />
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Price Estimator Section */}
+      <section className="py-16 lg:py-24 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute inset-0 bg-gradient-to-b from-mint/[0.02] via-transparent to-transparent pointer-events-none" />
+        <Container>
+          <ScrollReveal variant="fade-up">
+            <div className="text-center mb-10">
+              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
+                Vad vill du bygga?
+              </h2>
+              <p className="text-lg text-silver max-w-xl mx-auto">
+                Beskriv din idé så ger vi dig en prisuppskattning direkt.
+              </p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={100}>
+            <PriceEstimator />
+          </ScrollReveal>
+        </Container>
+      </section>
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
