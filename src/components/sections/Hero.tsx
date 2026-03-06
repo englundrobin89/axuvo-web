@@ -1,8 +1,14 @@
 import React from 'react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Container } from '../ui/Container';
 
 interface CTA {
+  text: string;
+  href: string;
+}
+
+interface EstimatorCta {
   text: string;
   href: string;
 }
@@ -15,6 +21,7 @@ interface HeroProps {
   trustText?: string;
   variant?: 'home' | 'service' | 'compact';
   badge?: string;
+  estimatorCta?: EstimatorCta;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -25,6 +32,7 @@ export const Hero: React.FC<HeroProps> = ({
   trustText,
   variant = 'service',
   badge,
+  estimatorCta,
 }) => {
   if (variant === 'home') {
     return (
@@ -66,7 +74,19 @@ export const Hero: React.FC<HeroProps> = ({
               )}
             </div>
             {trustText && (
-              <p className="text-sm text-slate">{trustText}</p>
+              <p className="text-sm text-slate mb-6">{trustText}</p>
+            )}
+            {estimatorCta && (
+              <a
+                href={estimatorCta.href}
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10 hover:border-mint/30 hover:bg-mint/5 transition-all duration-200 group"
+              >
+                <Sparkles className="w-4 h-4 text-mint" />
+                <span className="text-sm text-silver group-hover:text-white transition-colors">
+                  {estimatorCta.text}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-mint opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </a>
             )}
           </div>
         </Container>

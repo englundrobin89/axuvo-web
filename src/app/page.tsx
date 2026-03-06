@@ -19,7 +19,6 @@ import {
   Clock,
   Lock,
   CheckCircle,
-  Sparkles,
 } from 'lucide-react';
 import { FloatingUICards } from '@/components/visuals/FloatingUICards';
 
@@ -226,19 +225,11 @@ export default function Home() {
           href: '/build-studio',
         }}
         trustText="Gratis blueprint • Prototyp inom 48h • Säkerhet inbyggt från start"
+        estimatorCta={{
+          text: 'Beskriv din idé — få en prisuppskattning direkt',
+          href: '/build-studio',
+        }}
       />
-
-      {/* Estimator Teaser */}
-      <div className="text-center -mt-4 pb-10">
-        <a
-          href="/build-studio"
-          className="inline-flex items-center gap-2 text-sm text-silver hover:text-mint transition-colors group"
-        >
-          <Sparkles className="w-4 h-4 text-mint/60 group-hover:text-mint" />
-          Beskriv din idé och få en prisuppskattning direkt
-          <ArrowRight className="w-3.5 h-3.5 text-mint/60 group-hover:text-mint group-hover:translate-x-0.5 transition-all" />
-        </a>
-      </div>
 
       {/* Quick Summary Section */}
       <ScrollReveal variant="fade-up">
