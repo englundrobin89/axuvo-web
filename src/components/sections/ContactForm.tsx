@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 import { Button } from '../ui/Button';
-import { CheckCircle, Sparkles } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 interface FormData {
   namn: string;
@@ -14,8 +13,6 @@ interface FormData {
 }
 
 export const ContactForm: React.FC = () => {
-  const searchParams = useSearchParams();
-
   const [formData, setFormData] = useState<FormData>({
     namn: '',
     email: '',
@@ -26,38 +23,6 @@ export const ContactForm: React.FC = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
-  const [hasEstimate, setHasEstimate] = useState(false);
-
-  // Pre-fill from URL params (from price estimator)
-  useEffect(() => {
-    const arende = searchParams.get('arende');
-    const beskrivning = searchParams.get('beskrivning');
-    const komplexitet = searchParams.get('komplexitet');
-    const pris = searchParams.get('pris');
-    const tid = searchParams.get('tid');
-
-    if (beskrivning) {
-      let message = beskrivning;
-      if (komplexitet || pris || tid) {
-        message += '\n\n--- Prisuppskattning ---';
-        if (komplexitet) message += `\nKomplexitet: ${komplexitet}`;
-        if (pris) message += `\nPrisintervall: ${pris}`;
-        if (tid) message += `\nTidsram: ${tid}`;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        arende: arende || prev.arende,
-        meddelande: message,
-      }));
-      setHasEstimate(true);
-    } else if (arende) {
-      setFormData((prev) => ({
-        ...prev,
-        arende,
-      }));
-    }
-  }, [searchParams]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -115,7 +80,6 @@ export const ContactForm: React.FC = () => {
         meddelande: '',
       });
       setSubmitted(false);
-      setHasEstimate(false);
     }, 5000);
   };
 
@@ -139,16 +103,6 @@ export const ContactForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Estimate banner */}
-      {hasEstimate && (
-        <div className="bg-mint/5 border border-mint/20 rounded-lg px-4 py-3 flex items-center gap-3">
-          <Sparkles className="w-4 h-4 text-mint flex-shrink-0" />
-          <p className="text-sm text-silver">
-            Din prisuppskattning är bifogad i meddelandet nedan. Fyll i dina kontaktuppgifter så hör vi av oss!
-          </p>
-        </div>
-      )}
-
       {/* Namn */}
       <div>
         <label htmlFor="namn" className="block text-white font-medium mb-2">

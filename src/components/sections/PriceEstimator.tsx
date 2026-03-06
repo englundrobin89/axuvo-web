@@ -1,16 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Clock, ArrowRight, RotateCcw, TrendingUp, Layers, Zap } from 'lucide-react';
-
-interface EstimateResult {
-  complexity: string;
-  priceRange: string;
-  timelineWeeks: string;
-  summary: string;
-  features: string[];
-  monthlyFrom: string;
-}
+import { Sparkles, Clock, ArrowRight, RotateCcw, TrendingUp, Layers, Zap, CheckCircle, Lightbulb, MessageSquare, Pencil } from 'lucide-react';
+import { BookingModal } from '@/components/ui/BookingModal';
+import type { EstimateResult } from '@/app/api/estimate/route';
 
 const complexityColors: Record<string, string> = {
   'Enkel': 'text-emerald-400',
@@ -35,19 +28,28 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [result, setResult] = useState<EstimateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [clarifying, setClarifying] = useState(false);
+  const [clarification, setClarification] = useState('');
 
-  async function handleEstimate() {
+  async function handleEstimate(extraClarification?: string) {
     if (!description.trim()) return;
 
     setLoading(true);
     setError('');
     setResult(null);
+    setConfirmed(false);
+    setClarifying(false);
 
     try {
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
+        body: JSON.stringify({
+          description,
+          clarification: extraClarification || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -69,6 +71,19 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     setDescription('');
     setResult(null);
     setError('');
+    setConfirmed(false);
+    setClarifying(false);
+    setClarification('');
+  }
+
+  function handleClarify() {
+    setClarifying(true);
+  }
+
+  function handleSendClarification() {
+    if (!clarification.trim()) return;
+    handleEstimate(clarification);
+    setClarification('');
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -77,19 +92,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     }
   }
 
-  function buildContactUrl() {
-    const params = new URLSearchParams();
-    params.set('arende', 'Build Studio');
-    params.set('beskrivning', description);
-    if (result) {
-      params.set('komplexitet', result.complexity);
-      params.set('pris', result.priceRange);
-      params.set('tid', result.timelineWeeks + ' veckor');
+  function handleClarificationKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      handleSendClarification();
     }
-    return `/kontakt?${params.toString()}`;
   }
 
-  // Compact variant
+  // ─── Compact variant ───
   if (compact) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -105,7 +114,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           />
           <div className="flex items-center justify-end px-5 pb-3">
             <button
-              onClick={handleEstimate}
+              onClick={() => handleEstimate()}
               disabled={loading || !description.trim()}
               className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -126,8 +135,53 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
 
         {error && <div className="mt-3 text-red-400 text-sm text-center">{error}</div>}
 
-        {result && (
-          <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 p-5">
+        {result && !confirmed && (
+          <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-mint/20 p-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-2 text-sm text-mint mb-3">
+              <MessageSquare className="w-4 h-4" />
+              Har vi förstått dig rätt?
+            </div>
+            <p className="text-white text-sm mb-4">{result.understanding}</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setConfirmed(true)}
+                className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Ja, det stämmer
+              </button>
+              <button
+                onClick={handleClarify}
+                className="inline-flex items-center gap-2 border border-white/10 text-silver px-4 py-2 rounded-lg text-sm hover:border-white/20 hover:text-white transition-all"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Nej, jag vill förtydliga
+              </button>
+            </div>
+            {clarifying && (
+              <div className="mt-4 animate-in fade-in duration-300">
+                <textarea
+                  value={clarification}
+                  onChange={(e) => setClarification(e.target.value)}
+                  onKeyDown={handleClarificationKeyDown}
+                  placeholder="Berätta mer om vad du menar..."
+                  rows={2}
+                  className="w-full bg-midnight/50 text-white placeholder-slate/60 px-4 py-3 rounded-lg border border-white/10 text-sm resize-none focus:outline-none focus:border-mint/40 transition-colors"
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleSendClarification}
+                    disabled={loading || !clarification.trim()}
+                    className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover disabled:opacity-40"
+                  >
+                    {loading ? 'Analyserar...' : 'Uppdatera'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {result && confirmed && (
+          <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 p-5 animate-in fade-in duration-300">
             <div className="flex items-center gap-2 text-sm text-silver mb-3">
               <Sparkles className="w-3.5 h-3.5 text-mint" />
               Indikativ prisuppskattning
@@ -149,12 +203,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a
-                href={buildContactUrl()}
+              <button
+                onClick={() => setShowModal(true)}
                 className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
               >
                 Boka möte <ArrowRight className="w-3.5 h-3.5" />
-              </a>
+              </button>
               <button
                 onClick={handleReset}
                 className="inline-flex items-center gap-2 border border-white/10 text-silver px-4 py-2 rounded-lg text-sm hover:border-white/20 hover:text-white transition-all"
@@ -164,11 +218,20 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             </div>
           </div>
         )}
+
+        {showModal && result && (
+          <BookingModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            estimate={result}
+            description={description}
+          />
+        )}
       </div>
     );
   }
 
-  // Full variant (Build Studio hero)
+  // ─── Full variant (Build Studio hero) ───
   return (
     <div className="max-w-3xl mx-auto">
       <div className="relative">
@@ -189,7 +252,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             </span>
 
             <button
-              onClick={handleEstimate}
+              onClick={() => handleEstimate()}
               disabled={loading || !description.trim()}
               className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -211,7 +274,95 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
 
       {error && <div className="mt-4 text-red-400 text-sm text-center">{error}</div>}
 
-      {result && (
+      {/* Step 2: Understanding confirmation */}
+      {result && !confirmed && (
+        <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-mint/20 overflow-hidden">
+            <div className="px-6 pt-6 pb-4">
+              <div className="flex items-center gap-2 text-sm text-mint mb-4">
+                <MessageSquare className="w-4 h-4" />
+                Har vi förstått dig rätt?
+              </div>
+              <p className="text-white text-base leading-relaxed mb-4">
+                {result.understanding}
+              </p>
+
+              {/* Quick preview of estimate */}
+              <div className="grid grid-cols-3 gap-4 mb-5 p-4 rounded-xl bg-midnight/50">
+                <div>
+                  <div className="text-xs text-slate mb-1">Komplexitet</div>
+                  <span className={`inline-block text-sm font-medium px-2 py-0.5 rounded border ${complexityBg[result.complexity]} ${complexityColors[result.complexity]}`}>
+                    {result.complexity}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs text-slate mb-1">Indikativt pris</div>
+                  <div className="text-sm font-semibold text-white">{result.priceRange}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate mb-1">Uppskattad tid</div>
+                  <div className="text-sm font-semibold text-white">ca {result.timelineWeeks} veckor</div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => setConfirmed(true)}
+                  className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Ja, det stämmer — visa mer
+                </button>
+                <button
+                  onClick={handleClarify}
+                  className="inline-flex items-center gap-2 border border-white/10 text-silver px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:border-white/20 hover:text-white"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Nej, jag vill förtydliga
+                </button>
+              </div>
+
+              {/* Clarification textarea */}
+              {clarifying && (
+                <div className="mt-5 animate-in fade-in duration-300">
+                  <textarea
+                    value={clarification}
+                    onChange={(e) => setClarification(e.target.value)}
+                    onKeyDown={handleClarificationKeyDown}
+                    placeholder="Berätta mer om vad du vill bygga..."
+                    rows={3}
+                    className="w-full bg-midnight/50 text-white placeholder-slate/60 px-5 py-4 rounded-xl border border-white/10 text-sm resize-none focus:outline-none focus:border-mint/40 transition-colors"
+                    autoFocus
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={handleSendClarification}
+                      disabled={loading || !clarification.trim()}
+                      className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
+                          Analyserar...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Uppdatera uppskattning
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Full result + booking CTA */}
+      {result && confirmed && (
         <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
             <div className="px-6 pt-6 pb-4 border-b border-white/5">
@@ -275,6 +426,41 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               </div>
             )}
 
+            {/* AI Recommendations */}
+            {result.recommendations && result.recommendations.length > 0 && (
+              <div className="px-6 pb-5">
+                <div className="flex items-center gap-2 text-xs text-slate mb-3 uppercase tracking-wider">
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  Våra rekommendationer
+                </div>
+                <ul className="space-y-2">
+                  {result.recommendations.map((rec, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-silver">
+                      <CheckCircle className="w-3.5 h-3.5 text-mint mt-0.5 flex-shrink-0" />
+                      {rec}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Considerations */}
+            {result.considerations && result.considerations.length > 0 && (
+              <div className="px-6 pb-5">
+                <div className="flex items-center gap-2 text-xs text-slate mb-3 uppercase tracking-wider">
+                  Att tänka på
+                </div>
+                <ul className="space-y-2">
+                  {result.considerations.map((con, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate">
+                      <span className="text-yellow-400 mt-0.5">*</span>
+                      {con}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="px-6 pb-5">
               <div className="bg-white/[0.03] rounded-lg px-4 py-3 text-xs text-slate">
                 Förvaltning efter leverans från <span className="text-silver font-medium">{result.monthlyFrom}</span>
@@ -282,13 +468,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             </div>
 
             <div className="px-6 pb-6 flex flex-wrap gap-3">
-              <a
-                href={buildContactUrl()}
+              <button
+                onClick={() => setShowModal(true)}
                 className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover"
               >
                 Boka möte för att komma igång
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </button>
               <button
                 onClick={handleReset}
                 className="inline-flex items-center gap-2 border border-white/10 text-silver px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:border-white/20 hover:text-white"
@@ -297,9 +483,18 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 Prova en annan idé
               </button>
             </div>
-
           </div>
         </div>
+      )}
+
+      {/* Booking Modal */}
+      {showModal && result && (
+        <BookingModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          estimate={result}
+          description={description}
+        />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-interface EstimateResult {
+export interface EstimateResult {
   complexity: 'Enkel' | 'Medel' | 'Komplex' | 'Avancerad';
   priceRange: string;
   priceMin: number;
@@ -9,6 +9,9 @@ interface EstimateResult {
   summary: string;
   features: string[];
   monthlyFrom: string;
+  understanding: string;
+  recommendations: string[];
+  considerations: string[];
 }
 
 // ─── AI-powered estimation via OpenRouter ───
@@ -26,7 +29,10 @@ Svara ENBART med giltig JSON (inget annat). Strukturen:
   "timelineWeeks": "X–Y",
   "summary": "2-3 meningar som visar att du förstått vad kunden vill bygga och varför det hamnar i denna prisklass",
   "features": ["Feature 1", "Feature 2", ...max 6 st],
-  "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900"
+  "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
+  "understanding": "En kort mening som sammanfattar vad kunden vill bygga, skriven direkt till kunden. Exempel: 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara vad de vill ha.",
+  "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
+  "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
 
 Prisklasser:
@@ -39,12 +45,21 @@ Regler:
 - Var realistisk, inte optimistisk
 - Om beskrivningen är vag, anta en rimlig mellannivå snarare än det billigaste
 - summary ska vara personlig och specifik till kundens beskrivning, inte generisk
-- features ska vara konkreta tekniska funktioner som krävs för att bygga det kunden beskriver
-- Skriv på svenska`;
+- features ska vara konkreta tekniska funktioner som krävs
+- understanding ska vara en mening skriven direkt till kunden som visar att du förstått deras idé — varm och personlig ton
+- recommendations ska vara 2-3 konkreta, actionable tips specifika för deras projekt
+- considerations ska vara 1-2 saker kunden bör tänka på (datamigration, integrationer, skalbarhet, etc.)
+- Skriv på svenska
+- Skriv "du" inte "ni"`;
 
-async function estimateWithAI(description: string): Promise<EstimateResult | null> {
+async function estimateWithAI(description: string, clarification?: string): Promise<EstimateResult | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
+
+  let userMessage = `Kundens beskrivning:\n\n"${description}"`;
+  if (clarification) {
+    userMessage += `\n\nKunden förtydligade:\n\n"${clarification}"`;
+  }
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -59,10 +74,10 @@ async function estimateWithAI(description: string): Promise<EstimateResult | nul
         model: 'anthropic/claude-3.5-haiku',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Kundens beskrivning:\n\n"${description}"` },
+          { role: 'user', content: userMessage },
         ],
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 700,
       }),
     });
 
@@ -72,11 +87,9 @@ async function estimateWithAI(description: string): Promise<EstimateResult | nul
     const content = data.choices?.[0]?.message?.content;
     if (!content) return null;
 
-    // Parse JSON from response (handle potential markdown code blocks)
     const jsonStr = content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(jsonStr);
 
-    // Validate and normalize
     const validComplexities = ['Enkel', 'Medel', 'Komplex', 'Avancerad'] as const;
     const complexity = validComplexities.includes(parsed.complexity) ? parsed.complexity : 'Medel';
 
@@ -92,6 +105,9 @@ async function estimateWithAI(description: string): Promise<EstimateResult | nul
       summary: parsed.summary || 'Vi analyserade din beskrivning och bedömer projektet som ' + complexity.toLowerCase() + ' i komplexitet.',
       features: Array.isArray(parsed.features) ? parsed.features.slice(0, 6) : ['Webbapplikation', 'Responsiv design'],
       monthlyFrom: `${parsed.monthlyFrom || '3 900'} kr/mån`,
+      understanding: parsed.understanding || 'Vi har analyserat din beskrivning.',
+      recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 3) : [],
+      considerations: Array.isArray(parsed.considerations) ? parsed.considerations.slice(0, 3) : [],
     };
   } catch {
     return null;
@@ -254,6 +270,15 @@ function fallbackEstimate(description: string): EstimateResult {
     summary: summaries[complexity],
     features: featureList,
     monthlyFrom: `${monthlyFrom} kr/mån`,
+    understanding: 'Vi har analyserat din beskrivning och identifierat de viktigaste tekniska komponenterna.',
+    recommendations: [
+      'Börja med en MVP och iterera baserat på användarfeedback',
+      'Planera för skalbarhet redan från start',
+    ],
+    considerations: [
+      'Fundera på om du har befintliga system som ska integreras',
+      'Tänk igenom vilka användare som ska ha tillgång till systemet',
+    ],
   };
 }
 
@@ -262,7 +287,7 @@ function fallbackEstimate(description: string): EstimateResult {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { description } = body;
+    const { description, clarification } = body;
 
     if (!description || typeof description !== 'string') {
       return NextResponse.json(
@@ -279,7 +304,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Try AI first, fall back to keyword matching
-    const aiResult = await estimateWithAI(description);
+    const aiResult = await estimateWithAI(description, clarification);
     const result = aiResult ?? fallbackEstimate(description);
 
     return NextResponse.json(result);

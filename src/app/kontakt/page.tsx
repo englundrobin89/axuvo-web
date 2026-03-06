@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { Hero } from '@/components/sections/Hero';
 import { Container } from '@/components/ui/Container';
@@ -62,9 +61,7 @@ export default function Kontakt() {
                 <h2 className="text-2xl font-semibold text-white mb-8">
                   Skicka en förfrågan
                 </h2>
-                <Suspense fallback={<div className="h-96 animate-pulse bg-white/5 rounded-lg" />}>
-                  <ContactForm />
-                </Suspense>
+                <ContactForm />
               </div>
             </div>
 
