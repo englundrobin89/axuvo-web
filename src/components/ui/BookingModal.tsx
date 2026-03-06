@@ -149,7 +149,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
       {/* Modal */}
       <div
         ref={modalRef}
-        className="relative bg-midnight border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-[#0f1a2e] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
         role="dialog"
         aria-labelledby="booking-title"
       >
@@ -190,13 +190,18 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
             </div>
 
             {/* Features */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 mb-4">
               {estimate.features.map((f, i) => (
                 <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-silver border border-white/5">
                   {f}
                 </span>
               ))}
             </div>
+
+            {/* Summary */}
+            {estimate.summary && (
+              <p className="text-sm text-silver leading-relaxed">{estimate.summary}</p>
+            )}
           </div>
 
           {/* Divider */}

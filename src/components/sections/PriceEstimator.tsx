@@ -39,6 +39,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Auto-resize textarea
+  function autoResize(el: HTMLTextAreaElement) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+  }
+
   // Auto-scroll chat container only (not the page)
   useEffect(() => {
     const el = chatContainerRef.current;
@@ -57,6 +63,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     // Add user message
     setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setInput('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
     setLoading(true);
 
     try {
@@ -181,6 +188,18 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                   )}
                 </div>
               ))}
+              {/* Booking CTA inside chat */}
+              {latestEstimate && !loading && (
+                <div className="flex justify-center py-2">
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-5 py-3 rounded-xl font-semibold text-sm transition-all hover:bg-mint-hover"
+                  >
+                    Boka ett gratis blueprint-möte
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
               {loading && (
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-7 h-7 rounded-full bg-mint/10 flex items-center justify-center">
@@ -204,11 +223,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
                 onKeyDown={handleKeyDown}
                 placeholder={messages.length === 0 ? 'Beskriv vad du vill bygga...' : 'Förtydliga eller beskriv mer...'}
                 rows={1}
                 className="flex-1 bg-transparent text-white placeholder-slate/60 px-3 py-2 text-sm resize-none focus:outline-none"
+                style={{ maxHeight: '150px' }}
                 disabled={loading}
               />
               <button
@@ -225,19 +245,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             </div>
           </div>
         </div>
-
-        {/* Booking CTA */}
-        {latestEstimate && !loading && (
-          <div className="mt-4 flex justify-center animate-in fade-in duration-300">
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
-            >
-              Boka möte för att komma igång
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
 
         {showModal && latestEstimate && (
           <BookingModal
@@ -276,6 +283,18 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 )}
               </div>
             ))}
+            {/* Booking CTA inside chat */}
+            {latestEstimate && !loading && (
+              <div className="flex justify-center py-2">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-6 py-3.5 rounded-xl font-semibold transition-all duration-200 hover:bg-mint-hover"
+                >
+                  Boka ett gratis blueprint-möte
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
             {loading && (
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center">
@@ -299,7 +318,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
               onKeyDown={handleKeyDown}
               placeholder={messages.length === 0
                 ? 'En bokningsapp för ett gym med betalning och medlemshantering...'
@@ -307,6 +326,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               }
               rows={messages.length === 0 ? 3 : 1}
               className="flex-1 bg-transparent text-white placeholder-slate/60 px-2 py-2 text-lg resize-none focus:outline-none"
+              style={{ maxHeight: '150px' }}
               disabled={loading}
             />
             <button
@@ -330,20 +350,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           )}
         </div>
       </div>
-
-      {/* Booking CTA - appears after estimate */}
-      {latestEstimate && !loading && (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 bg-mint text-midnight px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:bg-mint-hover"
-          >
-            Boka möte för att komma igång
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-slate">eller skriv mer för att förtydliga</span>
-        </div>
-      )}
 
       {/* Booking Modal */}
       {showModal && latestEstimate && (
