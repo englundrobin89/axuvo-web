@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Hero } from '@/components/sections/Hero';
 import { FAQ } from '@/components/sections/FAQ';
 import { ContactCTA } from '@/components/sections/ContactCTA';
+import { EstimatorCTA } from '@/components/sections/EstimatorCTA';
 import { Container } from '@/components/ui/Container';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -286,6 +287,15 @@ export default function IdekatalogPage() {
           </ScrollReveal>
         </Container>
       </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Price Estimator */}
+      <EstimatorCTA
+        title="Har du en egen idé?"
+        subtitle="Beskriv vad du vill bygga så ger vi dig en prisuppskattning direkt."
+      />
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
