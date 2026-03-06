@@ -229,29 +229,16 @@ export default function Home() {
       />
 
       {/* Estimator Teaser */}
-      <section className="pb-12 lg:pb-16 -mt-2">
-        <Container>
-          <ScrollReveal variant="fade-up">
-            <div className="max-w-xl mx-auto">
-              <Button
-                variant="secondary"
-                size="lg"
-                as="link"
-                href="/build-studio"
-                className="w-full group relative overflow-hidden border-mint/20 hover:border-mint/40 bg-mint/5 hover:bg-mint/10"
-              >
-                <span className="flex items-center justify-center gap-3">
-                  <Sparkles className="w-5 h-5 text-mint" />
-                  <span className="text-white">
-                    Beskriv din idé — <span className="text-mint font-semibold">få en prisuppskattning direkt</span>
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-mint group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Button>
-            </div>
-          </ScrollReveal>
-        </Container>
-      </section>
+      <div className="text-center -mt-4 pb-10">
+        <a
+          href="/build-studio"
+          className="inline-flex items-center gap-2 text-sm text-silver hover:text-mint transition-colors group"
+        >
+          <Sparkles className="w-4 h-4 text-mint/60 group-hover:text-mint" />
+          Beskriv din idé och få en prisuppskattning direkt
+          <ArrowRight className="w-3.5 h-3.5 text-mint/60 group-hover:text-mint group-hover:translate-x-0.5 transition-all" />
+        </a>
+      </div>
 
       {/* Quick Summary Section */}
       <ScrollReveal variant="fade-up">
