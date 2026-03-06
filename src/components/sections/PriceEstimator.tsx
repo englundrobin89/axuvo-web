@@ -179,9 +179,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         )}
 
         <p className="text-sm text-silver leading-relaxed">{estimate.summary}</p>
-        <p className="text-xs text-slate">
-          Baserat på liknande projekt vi byggt. Exakt pris och tidsplan sätts efter ett kostnadsfritt blueprint-möte.
-        </p>
+
+        {/* Blueprint + prototype CTA */}
+        <div className="bg-mint/5 border border-mint/15 rounded-lg px-4 py-3 space-y-1">
+          <p className="text-sm text-white font-medium">Nästa steg: gratis blueprint-möte (~1h)</p>
+          <p className="text-xs text-silver">Du får en klickbar prototyp inom 48 timmar och ett exakt prisförslag — helt utan kostnad eller förpliktelse.</p>
+        </div>
+
         <div className="bg-white/[0.03] rounded-lg px-3 py-2 text-xs text-slate">
           Förvaltning efter leverans från <span className="text-silver font-medium">{estimate.monthlyFrom}</span>
         </div>
