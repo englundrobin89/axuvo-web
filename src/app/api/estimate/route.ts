@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export interface SuggestedFeature {
+  name: string;
+  description: string;
+  included: boolean;
+}
+
 export interface EstimateResult {
   complexity: 'Enkel' | 'Medel' | 'Komplex' | 'Avancerad';
   priceRange: string;
@@ -8,6 +14,7 @@ export interface EstimateResult {
   timelineWeeks: string;
   summary: string;
   features: string[];
+  suggestedFeatures?: SuggestedFeature[];
   monthlyFrom: string;
   understanding: string;
   recommendations: string[];
@@ -30,16 +37,24 @@ STANDARDSVAR — ge alltid en fullständig uppskattning med JSON nedan. Gör dit
   "timelineWeeks": "X–Y",
   "summary": "2-3 meningar som visar att du förstått vad kunden vill bygga och varför det hamnar i denna prisklass",
   "features": ["Feature 1", "Feature 2", ...max 6 st],
+  "suggestedFeatures": [
+    { "name": "Funktionsnamn", "description": "Kort beskrivning av funktionen", "included": true },
+    { "name": "Valfri funktion", "description": "Kort beskrivning", "included": false }
+  ],
   "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
   "understanding": "1-2 meningar som sammanfattar vad kunden vill bygga, skriven direkt till kunden. T.ex. 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara din förståelse av idén, varm och personlig ton.",
   "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
   "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
 
+suggestedFeatures: Returnera 8-10 funktioner totalt. 4-6 st med "included": true (kärnfunktioner som du bedömer krävs) och 2-4 st med "included": false (valfria tillägg som kan vara relevanta). Beskrivningen ska vara kort (5-10 ord) och förklara vad funktionen gör. Kunden kommer kunna välja vilka funktioner som ska ingå, och priset räknas om baserat på valen.
+
 UNDANTAG — Ställ en motfråga BARA om det är helt omöjligt att gissa vad kunden vill (t.ex. bara "hej" eller "app"). Då svarar du ENBART med:
 { "question": "Din fråga här" }
 
 Viktigt: om kunden har gett dig NÅGON ledtråd om vad de vill bygga (t.ex. "en app för ett gym", "en webbshop", "intern portal"), GÖR EN UPPSKATTNING. Gissa vilka funktioner som rimligen ingår. Fråga aldrig "vilka specifika funktioner vill du ha?" — det är ditt jobb att föreslå dem.
+
+OM KUNDEN SKICKAR EN LISTA MED VALDA FUNKTIONER (selectedFeatures): Räkna om pris, komplexitet och tidslinje baserat på exakt de funktionerna. Behåll understanding som innan men uppdatera allt annat.
 
 Prisklasser:
 - Enkel (25 000–60 000 kr): Enkla appar, landningssidor med funktionalitet, enkla bokningssystem. 2–4 veckor. Förvaltning från 3 900 kr/mån.
@@ -63,7 +78,7 @@ interface ConversationMessage {
   content: string;
 }
 
-async function estimateWithAI(description: string, clarification?: string, history?: ConversationMessage[]): Promise<EstimateResult | null> {
+async function estimateWithAI(description: string, clarification?: string, history?: ConversationMessage[], selectedFeatures?: string[]): Promise<EstimateResult | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 
@@ -84,6 +99,9 @@ async function estimateWithAI(description: string, clarification?: string, histo
     if (clarification) {
       messages.push({ role: 'user', content: clarification });
     }
+  } else if (selectedFeatures && selectedFeatures.length > 0) {
+    // Re-estimate with selected features
+    messages.push({ role: 'user', content: `Kundens beskrivning:\n\n"${description}"\n\nKunden har valt följande funktioner (selectedFeatures): ${selectedFeatures.join(', ')}\n\nRäkna om pris, komplexitet och tidslinje baserat på exakt dessa funktioner.` });
   } else {
     messages.push({ role: 'user', content: `Kundens beskrivning:\n\n"${description}"` });
   }
@@ -101,7 +119,7 @@ async function estimateWithAI(description: string, clarification?: string, histo
         model: 'anthropic/claude-3.5-haiku',
         messages,
         temperature: 0.3,
-        max_tokens: 700,
+        max_tokens: 1000,
       }),
     });
 
@@ -127,6 +145,19 @@ async function estimateWithAI(description: string, clarification?: string, histo
     const priceMin = typeof parsed.priceMin === 'number' ? parsed.priceMin : 60000;
     const priceMax = typeof parsed.priceMax === 'number' ? parsed.priceMax : 150000;
 
+    // Parse suggestedFeatures
+    let suggestedFeatures: SuggestedFeature[] | undefined;
+    if (Array.isArray(parsed.suggestedFeatures)) {
+      suggestedFeatures = parsed.suggestedFeatures
+        .filter((f: Record<string, unknown>) => f && typeof f.name === 'string')
+        .map((f: Record<string, unknown>) => ({
+          name: f.name as string,
+          description: (f.description as string) || '',
+          included: f.included === true,
+        }))
+        .slice(0, 10);
+    }
+
     return {
       complexity,
       priceRange: `${(priceMin / 1000).toFixed(0)} 000 – ${(priceMax / 1000).toFixed(0)} 000 kr`,
@@ -135,6 +166,7 @@ async function estimateWithAI(description: string, clarification?: string, histo
       timelineWeeks: parsed.timelineWeeks || '4–6',
       summary: parsed.summary || 'Vi analyserade din beskrivning och bedömer projektet som ' + complexity.toLowerCase() + ' i komplexitet.',
       features: Array.isArray(parsed.features) ? parsed.features.slice(0, 6) : ['Webbapplikation', 'Responsiv design'],
+      suggestedFeatures,
       monthlyFrom: `${parsed.monthlyFrom || '3 900'} kr/mån`,
       understanding: parsed.understanding || 'Vi har analyserat din beskrivning.',
       recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 3) : [],
@@ -318,7 +350,7 @@ function fallbackEstimate(description: string): EstimateResult {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { description, clarification, history } = body;
+    const { description, clarification, history, selectedFeatures } = body;
 
     if (!description || typeof description !== 'string') {
       return NextResponse.json(
@@ -335,7 +367,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Try AI first, fall back to keyword matching
-    const aiResult = await estimateWithAI(description, clarification, history);
+    const aiResult = await estimateWithAI(description, clarification, history, selectedFeatures);
     const result = aiResult ?? fallbackEstimate(description);
 
     return NextResponse.json(result);

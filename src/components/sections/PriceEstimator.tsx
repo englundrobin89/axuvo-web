@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckCircle } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckCircle, Plus } from 'lucide-react';
 import { BookingModal } from '@/components/ui/BookingModal';
-import type { EstimateResult } from '@/app/api/estimate/route';
+import type { EstimateResult, SuggestedFeature } from '@/app/api/estimate/route';
 
 const complexityColors: Record<string, string> = {
   'Enkel': 'text-emerald-400',
@@ -23,9 +23,9 @@ interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   estimate?: EstimateResult;
-  showEstimate?: boolean; // false = show only understanding, true = show estimate card
-  isQuestion?: boolean; // AI asked a clarifying question
-  confirmed?: boolean; // user confirmed understanding
+  showEstimate?: boolean;
+  isQuestion?: boolean;
+  confirmed?: boolean;
 }
 
 interface PriceEstimatorProps {
@@ -39,7 +39,10 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [confirmedEstimate, setConfirmedEstimate] = useState<EstimateResult | null>(null);
   const [originalDescription, setOriginalDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  // Feature selection state: map of feature name → selected boolean
+  const [featureSelection, setFeatureSelection] = useState<Map<string, boolean>>(new Map());
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,11 +56,26 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     if (el) {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages, loading]);
+  }, [messages, loading, confirmLoading, pendingEstimate]);
+
+  // Initialize feature selection when we get suggestedFeatures
+  function initFeatureSelection(features: SuggestedFeature[]) {
+    const map = new Map<string, boolean>();
+    features.forEach(f => map.set(f.name, f.included));
+    setFeatureSelection(map);
+  }
+
+  function toggleFeature(name: string) {
+    setFeatureSelection(prev => {
+      const next = new Map(prev);
+      next.set(name, !next.get(name));
+      return next;
+    });
+  }
 
   async function handleSend() {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || confirmLoading) return;
 
     const isFirst = messages.length === 0;
     if (isFirst) setOriginalDescription(text);
@@ -66,10 +84,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     setInput('');
     if (inputRef.current) inputRef.current.style.height = 'auto';
     setLoading(true);
+    // Reset feature selection and pending estimate when user sends new message
+    setPendingEstimate(null);
+    setFeatureSelection(new Map());
 
     try {
       const desc = isFirst ? text : originalDescription;
-      // Build history for context (so AI sees previous Q&A)
       const currentMessages = [...messages, { role: 'user' as const, content: text }];
       const history = currentMessages.map(m => ({ role: m.role, content: m.content }));
 
@@ -100,8 +120,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         return;
       }
 
-      // AI understood — store estimate but only show understanding first
+      // AI understood — store estimate and show understanding + feature chips
       setPendingEstimate(data);
+      if (data.suggestedFeatures && data.suggestedFeatures.length > 0) {
+        initFeatureSelection(data.suggestedFeatures);
+      }
       setMessages((prev) => [...prev, {
         role: 'ai',
         content: data.understanding,
@@ -116,16 +139,67 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     }
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!pendingEstimate) return;
-    setConfirmedEstimate(pendingEstimate);
-    // Update last AI message to show estimate
+
+    // Get selected feature names
+    const selectedFeatures = Array.from(featureSelection.entries())
+      .filter(([, selected]) => selected)
+      .map(([name]) => name);
+
+    // Check if selection differs from original suggestedFeatures
+    const originalSelected = (pendingEstimate.suggestedFeatures || [])
+      .filter(f => f.included)
+      .map(f => f.name)
+      .sort();
+    const currentSelected = [...selectedFeatures].sort();
+    const selectionChanged = JSON.stringify(originalSelected) !== JSON.stringify(currentSelected);
+
+    if (selectionChanged && selectedFeatures.length > 0) {
+      // Re-estimate with selected features
+      setConfirmLoading(true);
+      try {
+        const res = await fetch('/api/estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: originalDescription,
+            selectedFeatures,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.complexity) {
+          // Use the re-estimated data but keep the selected features as the features list
+          data.features = selectedFeatures;
+          setConfirmedEstimate(data);
+          setMessages((prev) => {
+            const updated = [...prev];
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i].estimate && !updated[i].showEstimate) {
+                updated[i] = { ...updated[i], estimate: data, showEstimate: true, confirmed: true };
+                break;
+              }
+            }
+            return updated;
+          });
+          setPendingEstimate(null);
+          return;
+        }
+      } catch {
+        // Fall through to use original estimate
+      } finally {
+        setConfirmLoading(false);
+      }
+    }
+
+    // Use original estimate (no feature change or re-estimate failed)
+    const finalEstimate = { ...pendingEstimate, features: selectedFeatures.length > 0 ? selectedFeatures : pendingEstimate.features };
+    setConfirmedEstimate(finalEstimate);
     setMessages((prev) => {
       const updated = [...prev];
-      // Find the last AI message with an estimate
       for (let i = updated.length - 1; i >= 0; i--) {
         if (updated[i].estimate && !updated[i].showEstimate) {
-          updated[i] = { ...updated[i], showEstimate: true, confirmed: true };
+          updated[i] = { ...updated[i], estimate: finalEstimate, showEstimate: true, confirmed: true };
           break;
         }
       }
@@ -141,12 +215,50 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     }
   }
 
+  // ─── Feature chips component ───
+  function FeatureChips() {
+    if (!pendingEstimate?.suggestedFeatures || pendingEstimate.suggestedFeatures.length === 0) return null;
+
+    return (
+      <div className="space-y-2.5">
+        <p className="text-xs text-slate">Välj vilka funktioner som ska ingå:</p>
+        <div className="flex flex-wrap gap-2">
+          {pendingEstimate.suggestedFeatures.map((feature) => {
+            const isSelected = featureSelection.get(feature.name) ?? feature.included;
+            return (
+              <button
+                key={feature.name}
+                onClick={() => toggleFeature(feature.name)}
+                title={feature.description}
+                className={`
+                  inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+                  border transition-all cursor-pointer select-none
+                  ${isSelected
+                    ? 'bg-mint/10 border-mint/30 text-mint hover:bg-mint/20'
+                    : 'bg-white/5 border-white/10 text-silver/70 hover:bg-white/10 hover:text-silver'
+                  }
+                `}
+              >
+                {isSelected ? (
+                  <CheckCircle className="w-3 h-3" />
+                ) : (
+                  <Plus className="w-3 h-3" />
+                )}
+                {feature.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // ─── Estimate card ───
   function EstimateCard({ estimate }: { estimate: EstimateResult }) {
     return (
       <div className="mt-3 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div className="bg-midnight/60 rounded-lg p-3">
+          <div className="bg-midnight/60 rounded-lg p-3 text-left">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Layers className="w-3 h-3" /> Komplexitet
             </div>
@@ -154,13 +266,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               {estimate.complexity}
             </span>
           </div>
-          <div className="bg-midnight/60 rounded-lg p-3">
+          <div className="bg-midnight/60 rounded-lg p-3 text-left">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <TrendingUp className="w-3 h-3" /> Indikativt pris
             </div>
             <div className="text-sm font-semibold text-white">{estimate.priceRange}</div>
           </div>
-          <div className="bg-midnight/60 rounded-lg p-3">
+          <div className="bg-midnight/60 rounded-lg p-3 text-left">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Clock className="w-3 h-3" /> Uppskattad tid
             </div>
@@ -171,7 +283,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         {estimate.features.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-2">
-              <Zap className="w-3 h-3" /> Identifierade funktioner
+              <Zap className="w-3 h-3" /> Valda funktioner
             </div>
             <div className="flex flex-wrap gap-1.5">
               {estimate.features.map((f, i) => (
@@ -221,30 +333,50 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           </div>
         ))}
 
-        {/* Confirm/deny buttons — show when we have a pending estimate */}
-        {pendingEstimate && !loading && (
-          <div className="flex flex-col gap-2 pl-0 sm:pl-10">
-            <p className="text-xs text-slate">Har vi förstått din idé rätt?</p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={handleConfirm}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-mint/10 border border-mint/20 text-mint text-sm font-medium hover:bg-mint/20 transition-colors cursor-pointer"
-              >
-                <CheckCircle className="w-3.5 h-3.5" />
-                Ja, visa prisförslag
-              </button>
-              <button
-                onClick={() => inputRef.current?.focus()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-silver text-sm hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                Nej, jag förtydligar
-              </button>
+        {/* Feature chips + confirm/deny — show when we have a pending estimate */}
+        {pendingEstimate && !loading && !confirmLoading && (
+          <div className="flex flex-col gap-3 pl-0 sm:pl-10">
+            <FeatureChips />
+            <div>
+              <p className="text-xs text-slate mb-2">Har vi förstått din idé rätt?</p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={handleConfirm}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-mint/10 border border-mint/20 text-mint text-sm font-medium hover:bg-mint/20 transition-colors cursor-pointer"
+                >
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Ja, visa prisförslag
+                </button>
+                <button
+                  onClick={() => inputRef.current?.focus()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-silver text-sm hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Nej, jag förtydligar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm loading state */}
+        {confirmLoading && (
+          <div className="flex gap-3">
+            <div className={`flex-shrink-0 ${iconSize} rounded-full bg-mint/10 flex items-center justify-center`}>
+              <Bot className={`${botIcon} text-mint`} />
+            </div>
+            <div className={`bg-white/[0.03] border border-white/5 ${bubble}`}>
+              <p className="text-sm text-silver">Räknar om baserat på dina val...</p>
+              <div className="flex gap-1.5 mt-2">
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
+              </div>
             </div>
           </div>
         )}
 
         {/* Booking CTA + helper text */}
-        {confirmedEstimate && !loading && !pendingEstimate && (
+        {confirmedEstimate && !loading && !pendingEstimate && !confirmLoading && (
           <div className="space-y-2">
             <button
               onClick={() => setShowModal(true)}
@@ -299,11 +431,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 rows={1}
                 className="flex-1 bg-transparent text-white placeholder-slate/60 px-3 py-2 text-sm resize-none focus:outline-none"
                 style={{ maxHeight: '150px' }}
-                disabled={loading}
+                disabled={loading || confirmLoading}
               />
               <button
                 onClick={handleSend}
-                disabled={loading || !input.trim()}
+                disabled={loading || confirmLoading || !input.trim()}
                 className="flex-shrink-0 p-2.5 rounded-lg bg-mint text-midnight transition-all hover:bg-mint-hover disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -352,11 +484,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               rows={messages.length === 0 ? 3 : 1}
               className="flex-1 bg-transparent text-white placeholder-slate/60 px-2 py-2 text-base sm:text-lg resize-none focus:outline-none"
               style={{ maxHeight: '150px' }}
-              disabled={loading}
+              disabled={loading || confirmLoading}
             />
             <button
               onClick={handleSend}
-              disabled={loading || !input.trim()}
+              disabled={loading || confirmLoading || !input.trim()}
               className="flex-shrink-0 p-3 rounded-xl bg-mint text-midnight transition-all hover:bg-mint-hover disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {loading ? (
