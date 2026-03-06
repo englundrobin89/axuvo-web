@@ -130,7 +130,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 p-5">
             <div className="flex items-center gap-2 text-sm text-silver mb-3">
               <Sparkles className="w-3.5 h-3.5 text-mint" />
-              Prisuppskattning
+              Indikativ prisuppskattning
             </div>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
@@ -145,7 +145,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               </div>
               <div>
                 <div className="text-xs text-slate uppercase tracking-wider mb-1">Tid</div>
-                <div className="text-lg font-bold text-white">{result.timelineWeeks} v</div>
+                <div className="text-lg font-bold text-white">ca {result.timelineWeeks} v</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -217,7 +217,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             <div className="px-6 pt-6 pb-4 border-b border-white/5">
               <div className="flex items-center gap-2 text-sm text-silver">
                 <Sparkles className="w-4 h-4 text-mint" />
-                Prisuppskattning
+                Indikativ prisuppskattning
               </div>
             </div>
 
@@ -234,21 +234,24 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               <div className="bg-midnight/50 p-5">
                 <div className="flex items-center gap-2 text-xs text-slate mb-2 uppercase tracking-wider">
                   <TrendingUp className="w-3.5 h-3.5" />
-                  Prisförslag
+                  Indikativt pris
                 </div>
                 <div className="text-xl font-bold text-white">{result.priceRange}</div>
               </div>
               <div className="bg-midnight/50 p-5">
                 <div className="flex items-center gap-2 text-xs text-slate mb-2 uppercase tracking-wider">
                   <Clock className="w-3.5 h-3.5" />
-                  Tidsram
+                  Uppskattad tid
                 </div>
-                <div className="text-xl font-bold text-white">{result.timelineWeeks} veckor</div>
+                <div className="text-xl font-bold text-white">ca {result.timelineWeeks} veckor</div>
               </div>
             </div>
 
             <div className="px-6 py-5 border-t border-white/5">
               <p className="text-silver text-sm leading-relaxed">{result.summary}</p>
+              <p className="text-slate text-xs mt-3">
+                Baserat på liknande projekt vi byggt. Exakt pris och tidsplan sätts efter ett kostnadsfritt blueprint-möte.
+              </p>
             </div>
 
             {result.features.length > 0 && (
@@ -295,11 +298,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               </button>
             </div>
 
-            <div className="px-6 pb-4">
-              <p className="text-[11px] text-slate/50">
-                Detta är en indikativ uppskattning. Exakt pris sätts efter ett kostnadsfritt blueprint-möte.
-              </p>
-            </div>
           </div>
         </div>
       )}

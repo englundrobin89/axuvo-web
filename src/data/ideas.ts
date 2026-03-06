@@ -9,7 +9,7 @@ export interface Idea {
   problems: string[];
   audience: string;
   features?: string[];
-  category: 'quick' | 'medium' | 'large';
+  category: 'quick' | 'medium' | 'large' | 'enterprise';
   problem?: string;
   solution?: string;
   effects?: string[];
@@ -479,12 +479,120 @@ export const ideas: Idea[] = [
       },
     ],
   },
+
+  // 350k-600k+ kr range
+  {
+    id: '10',
+    title: 'AI-plattform',
+    slug: 'ai-plattform',
+    description: 'En avancerad AI-driven plattform som automatiserar beslutsfattning, analys och kundinteraktion',
+    priceRange: '350k-600k',
+    minPrice: 350000,
+    maxPrice: 600000,
+    category: 'enterprise',
+    icon: 'Bot',
+    problem: 'Du har stora datamängder men ingen vettig insikt. Dina team fattar beslut baserat på magkänsla istället för data. Du vill automatisera komplexa processer som kräver intelligens — inte bara regler.',
+    solution: 'Vi bygger en AI-plattform skräddarsydd för din verksamhet. Den analyserar data, ger prediktioner, automatiserar beslut och lär sig över tid. Integrationer mot dina befintliga system gör att AI:n jobbar med den data du redan har.',
+    effects: [
+      'Datadrivna beslut istället för magkänsla',
+      'Automatisera komplexa analyser som tidigare tog dagar',
+      'Prediktiva insikter — förutsäg trender innan de händer',
+      'Skalbar intelligens som förbättras över tid',
+    ],
+    problems: [
+      'Stora datamängder utan actionable insights',
+      'Komplexa beslut som kräver manuell analys',
+      'Vill automatisera intelligenta processer',
+      'Konkurrenter investerar i AI och du riskerar att hamna efter',
+    ],
+    audience: 'Medelstora till stora företag, datatunga verksamheter, företag med komplexa analysprocesser',
+    features: [
+      'Anpassade AI-modeller för din bransch',
+      'Realtidsanalys och dashboards',
+      'Prediktiva modeller och prognoser',
+      'Integration med befintliga datakällor',
+      'Automatiserat beslutsfattande',
+      'Kontinuerlig inlärning och förbättring',
+    ],
+    faqItems: [
+      {
+        question: 'Behöver vi mycket data för att komma igång?',
+        answer: 'Det beror på användningsfallet. Vissa AI-lösningar kan fungera med relativt lite data tack vare förtränade modeller. Vi utvärderar din datasituation under blueprint-mötet.',
+      },
+      {
+        question: 'Vilken typ av AI använder ni?',
+        answer: 'Vi använder det som passar bäst — allt från klassiska maskininlärningsmodeller till moderna LLM:er (stora språkmodeller). Vi väljer teknik baserat på ditt problem, inte trender.',
+      },
+      {
+        question: 'Hur hanteras integritet och dataskydd?',
+        answer: 'Vi bygger med GDPR i grunden. Din data stannar i dina system. Vi kan bygga med on-premise AI-modeller om du har extra höga säkerhetskrav.',
+      },
+      {
+        question: 'Kan plattformen förbättras efterhand?',
+        answer: 'Ja, det är kärnan i AI. Modellerna kan tränas om med ny data och vi kan lägga till nya funktioner löpande med ett förvaltningspaket.',
+      },
+    ],
+  },
+  {
+    id: '11',
+    title: 'Fullskalig marknadsplats',
+    slug: 'marknadsplats',
+    description: 'En komplett tvåsidig marknadsplats som kopplar ihop köpare och säljare med betalning, recensioner och sökning',
+    priceRange: '350k-600k+',
+    minPrice: 350000,
+    maxPrice: 600000,
+    category: 'enterprise',
+    icon: 'Globe',
+    problem: 'Du ser en möjlighet att koppla ihop en grupp säljare med en grupp köpare. Det finns ingen bra plattform i din nisch. Du vill bygga en marknadsplats som genererar intäkter via provision, prenumeration eller annonser.',
+    solution: 'Vi bygger en fullskalig tvåsidig marknadsplats med allt som krävs — användarregistrering, produktkataloger, sök och filtrering, betalningshantering, recensioner, meddelandesystem och adminpanel. Designad för att skalas från dag ett.',
+    effects: [
+      'Skapa en ny intäktskälla via provision eller prenumeration',
+      'Koppla ihop utbud och efterfrågan i din nisch',
+      'Skalbar plattform som växer med antal användare',
+      'Stark konkurrensbarriär med nätverkseffekter',
+    ],
+    problems: [
+      'Det saknas en bra plattform i din nisch',
+      'Köpare och säljare hittar inte varandra effektivt',
+      'Du vill bygga en skalbar digital affärsmodell',
+      'Befintliga lösningar är för generella eller för dyra',
+    ],
+    audience: 'Entreprenörer, nischade branscher, företag som vill bygga plattformsaffär',
+    features: [
+      'Tvåsidig registrering och verifiering',
+      'Produktkataloger med avancerad sökning',
+      'Betalningshantering med escrow',
+      'Recensions- och ratingsystem',
+      'Meddelandesystem mellan köpare och säljare',
+      'Adminpanel med analytics',
+      'Provisionshantering',
+    ],
+    faqItems: [
+      {
+        question: 'Hur hanteras betalningen mellan köpare och säljare?',
+        answer: 'Vi integrerar med Stripe Connect eller liknande. Betalningen går via marknadsplatsen som automatiskt tar ut provision innan säljaren får sin del.',
+      },
+      {
+        question: 'Kan vi börja med en enklare version och bygga ut?',
+        answer: 'Absolut. Vi rekommenderar att starta med kärnfunktionerna — annonsering, sökning och betalning — och sedan lägga till recensioner, meddelandesystem och analytics i fas 2.',
+      },
+      {
+        question: 'Hur lockar man de första användarna?',
+        answer: 'Det är en affärsutmaning, inte teknisk. Men vi kan bygga in funktioner som underlättar — som inbjudningsprogram, kuponger och enkla onboarding-flöden.',
+      },
+      {
+        question: 'Vilken teknik används?',
+        answer: 'Vi bygger med modern tech-stack — Next.js, PostgreSQL, Stripe Connect. Allt är skalbart och redo för tusentals samtidiga användare.',
+      },
+    ],
+  },
 ];
 
 export const ideasByCategory = {
   quick: ideas.filter((idea) => idea.category === 'quick'),
   medium: ideas.filter((idea) => idea.category === 'medium'),
   large: ideas.filter((idea) => idea.category === 'large'),
+  enterprise: ideas.filter((idea) => idea.category === 'enterprise'),
 };
 
 export const getIdeaBySlug = (slug: string): Idea | undefined => {

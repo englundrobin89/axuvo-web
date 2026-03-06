@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Idékatalog — 9 lösningsidéer från 25k till 350k kr | Build Studio',
+  title: 'Idékatalog — 11 lösningsidéer från 25k till 600k+ kr | Build Studio',
   description:
-    'Se 9 konkreta exempel på vad vi kan bygga. Bokningsapp, offertverktyg, kundportal, system, AI-chatbot, SaaS-produkt och mycket mer. Med prisexempel för varje lösning.',
+    'Se 11 konkreta exempel på vad vi kan bygga. Bokningsapp, offertverktyg, kundportal, AI-plattform, marknadsplats och mycket mer. Med prisexempel för varje lösning.',
   keywords: [
     'idékatalog',
     'exempel lösningar',
@@ -34,9 +34,9 @@ export const metadata: Metadata = {
     'digital transformation',
   ],
   openGraph: {
-    title: 'Idékatalog — 9 konkreta lösningsidéer',
+    title: 'Idékatalog — 11 konkreta lösningsidéer',
     description:
-      'Inspiration och prisexempel för vad vi kan bygga åt dig. Från bokningsapp till komplett plattform.',
+      'Inspiration och prisexempel för vad vi kan bygga åt dig. Från bokningsapp till AI-plattform och marknadsplats.',
     type: 'website',
     locale: 'sv_SE',
   },
@@ -143,7 +143,7 @@ export default function IdekatalogPage() {
         variant="service"
         badge="Idékatalog"
         title="Inspiration och konkreta prisexempel"
-        subtitle="Här är 9 konkreta lösningsidéer vi kan bygga. Från enkla bokningsappar till komplexa SaaS-produkter. Se prisexempel och vad varje lösning kan göra för dig."
+        subtitle="Här är 11 konkreta lösningsidéer vi kan bygga. Från enkla bokningsappar till AI-plattformar och fullskaliga marknadsplatser. Se prisexempel och vad varje lösning kan göra för dig."
         primaryCta={{
           text: 'Boka blueprint-möte',
           href: '/kontakt',
@@ -152,7 +152,7 @@ export default function IdekatalogPage() {
           text: 'Läs mer om Build Studio',
           href: '/build-studio',
         }}
-        trustText="9 idéer • Prisexempel • Konkreta exempel"
+        trustText="11 idéer • Prisexempel • Konkreta exempel"
       />
 
       {/* Divider */}
@@ -238,6 +238,38 @@ export default function IdekatalogPage() {
 
           <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {ideasByCategory.large.map((idea) => (
+              <IdeaCard
+                key={idea.slug}
+                title={idea.title}
+                description={idea.description}
+                priceRange={idea.priceRange}
+                icon={iconMap[idea.icon || 'Rocket'] || <Rocket className="w-8 h-8" />}
+                slug={idea.slug}
+              />
+            ))}
+          </StaggerReveal>
+        </Container>
+      </section>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Enterprise Ideas (350-600k+) */}
+      <section className="py-12 lg:py-16">
+        <Container>
+          <ScrollReveal variant="fade-up">
+            <div className="mb-12">
+              <h2 className="text-3xl lg:text-4xl font-semibold text-white mb-2">
+                350 000 – 600 000+ kr
+              </h2>
+              <p className="text-lg text-silver">
+                Avancerade AI-plattformar och marknadsplatser. Typisk byggtid 12-20 veckor.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ideasByCategory.enterprise.map((idea) => (
               <IdeaCard
                 key={idea.slug}
                 title={idea.title}
