@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, User, Bot } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckCircle } from 'lucide-react';
 import { BookingModal } from '@/components/ui/BookingModal';
 import type { EstimateResult } from '@/app/api/estimate/route';
 
@@ -23,6 +23,9 @@ interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   estimate?: EstimateResult;
+  showEstimate?: boolean; // false = show only understanding, true = show estimate card
+  isQuestion?: boolean; // AI asked a clarifying question
+  confirmed?: boolean; // user confirmed understanding
 }
 
 interface PriceEstimatorProps {
@@ -32,20 +35,19 @@ interface PriceEstimatorProps {
 export default function PriceEstimator({ compact = false }: PriceEstimatorProps) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [latestEstimate, setLatestEstimate] = useState<EstimateResult | null>(null);
+  const [pendingEstimate, setPendingEstimate] = useState<EstimateResult | null>(null);
+  const [confirmedEstimate, setConfirmedEstimate] = useState<EstimateResult | null>(null);
   const [originalDescription, setOriginalDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   function autoResize(el: HTMLTextAreaElement) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 150) + 'px';
   }
 
-  // Auto-scroll chat container only (not the page)
   useEffect(() => {
     const el = chatContainerRef.current;
     if (el) {
@@ -57,22 +59,22 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     const text = input.trim();
     if (!text || loading) return;
 
-    const isFirstMessage = messages.length === 0;
-    if (isFirstMessage) setOriginalDescription(text);
+    const isFirst = messages.length === 0;
+    if (isFirst) setOriginalDescription(text);
 
-    // Add user message
     setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setInput('');
     if (inputRef.current) inputRef.current.style.height = 'auto';
     setLoading(true);
 
     try {
+      const desc = isFirst ? text : originalDescription;
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          description: isFirstMessage ? text : originalDescription,
-          clarification: isFirstMessage ? undefined : text,
+          description: desc,
+          clarification: isFirst ? undefined : text,
         }),
       });
 
@@ -83,11 +85,23 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         return;
       }
 
-      setLatestEstimate(data);
+      // AI asked a clarifying question
+      if (data.question && !data.complexity) {
+        setMessages((prev) => [...prev, {
+          role: 'ai',
+          content: data.question,
+          isQuestion: true,
+        }]);
+        return;
+      }
+
+      // AI understood — store estimate but only show understanding first
+      setPendingEstimate(data);
       setMessages((prev) => [...prev, {
         role: 'ai',
         content: data.understanding,
         estimate: data,
+        showEstimate: false,
       }]);
     } catch {
       setMessages((prev) => [...prev, { role: 'ai', content: 'Kunde inte nå servern. Försök igen.' }]);
@@ -97,6 +111,24 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     }
   }
 
+  function handleConfirm() {
+    if (!pendingEstimate) return;
+    setConfirmedEstimate(pendingEstimate);
+    // Update last AI message to show estimate
+    setMessages((prev) => {
+      const updated = [...prev];
+      // Find the last AI message with an estimate
+      for (let i = updated.length - 1; i >= 0; i--) {
+        if (updated[i].estimate && !updated[i].showEstimate) {
+          updated[i] = { ...updated[i], showEstimate: true, confirmed: true };
+          break;
+        }
+      }
+      return updated;
+    });
+    setPendingEstimate(null);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -104,11 +136,10 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     }
   }
 
-  // ─── Estimate result card (reused in both variants) ───
+  // ─── Estimate card ───
   function EstimateCard({ estimate }: { estimate: EstimateResult }) {
     return (
       <div className="mt-3 space-y-3">
-        {/* Price/complexity/time grid */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-midnight/60 rounded-lg p-3">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
@@ -132,7 +163,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           </div>
         </div>
 
-        {/* Features */}
         {estimate.features.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-2">
@@ -148,17 +178,93 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           </div>
         )}
 
-        {/* Summary + disclaimer */}
         <p className="text-sm text-silver leading-relaxed">{estimate.summary}</p>
         <p className="text-xs text-slate">
           Baserat på liknande projekt vi byggt. Exakt pris och tidsplan sätts efter ett kostnadsfritt blueprint-möte.
         </p>
-
-        {/* Maintenance */}
         <div className="bg-white/[0.03] rounded-lg px-3 py-2 text-xs text-slate">
           Förvaltning efter leverans från <span className="text-silver font-medium">{estimate.monthlyFrom}</span>
         </div>
       </div>
+    );
+  }
+
+  // ─── Chat message renderer (shared) ───
+  function renderMessages(size: 'sm' | 'lg') {
+    const iconSize = size === 'sm' ? 'w-7 h-7' : 'w-8 h-8';
+    const botIcon = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+    const bubble = size === 'sm' ? 'rounded-xl px-4 py-3' : 'rounded-2xl px-5 py-4';
+    const textClass = size === 'sm' ? 'text-sm text-white' : 'text-white leading-relaxed';
+
+    return (
+      <>
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+            {msg.role === 'ai' && (
+              <div className={`flex-shrink-0 ${iconSize} rounded-full bg-mint/10 flex items-center justify-center mt-0.5`}>
+                <Bot className={`${botIcon} text-mint`} />
+              </div>
+            )}
+            <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} ${bubble}`}>
+              <p className={textClass}>{msg.content}</p>
+              {msg.estimate && msg.showEstimate && <EstimateCard estimate={msg.estimate} />}
+            </div>
+          </div>
+        ))}
+
+        {/* Confirm/deny buttons — show when we have a pending estimate */}
+        {pendingEstimate && !loading && (
+          <div className="flex flex-col gap-2 pl-10">
+            <p className="text-xs text-slate">Har vi förstått din idé rätt?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleConfirm}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-mint/10 border border-mint/20 text-mint text-sm font-medium hover:bg-mint/20 transition-colors"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                Ja, visa prisförslag
+              </button>
+              <button
+                onClick={() => inputRef.current?.focus()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-silver text-sm hover:bg-white/10 transition-colors"
+              >
+                Nej, jag förtydligar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Booking CTA + helper text */}
+        {confirmedEstimate && !loading && !pendingEstimate && (
+          <div className="space-y-2">
+            <button
+              onClick={() => setShowModal(true)}
+              className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
+            >
+              Boka ett gratis blueprint-möte
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <p className="text-xs text-slate text-center">
+              eller skriv mer för att göra din idé tydligare
+            </p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex gap-3">
+            <div className={`flex-shrink-0 ${iconSize} rounded-full bg-mint/10 flex items-center justify-center`}>
+              <Bot className={`${botIcon} text-mint`} />
+            </div>
+            <div className={`bg-white/[0.03] border border-white/5 ${bubble}`}>
+              <div className="flex gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
+                <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -167,57 +273,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     return (
       <div className="max-w-2xl mx-auto">
         <div className="bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-          {/* Chat messages */}
           {messages.length > 0 && (
             <div ref={chatContainerRef} className="max-h-[400px] overflow-y-auto p-4 space-y-4">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-                  {msg.role === 'ai' && (
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-mint/10 flex items-center justify-center mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-mint" />
-                    </div>
-                  )}
-                  <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} rounded-xl px-4 py-3`}>
-                    <p className="text-sm text-white">{msg.content}</p>
-                    {msg.estimate && <EstimateCard estimate={msg.estimate} />}
-                  </div>
-                  {msg.role === 'user' && (
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center mt-0.5">
-                      <User className="w-3.5 h-3.5 text-silver" />
-                    </div>
-                  )}
-                </div>
-              ))}
-              {/* Booking CTA inside chat */}
-              {latestEstimate && !loading && (
-                <div className="flex justify-center py-2">
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-5 py-3 rounded-xl font-semibold text-sm transition-all hover:bg-mint-hover"
-                  >
-                    Boka ett gratis blueprint-möte
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-              {loading && (
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-mint/10 flex items-center justify-center">
-                    <Bot className="w-3.5 h-3.5 text-mint" />
-                  </div>
-                  <div className="bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
-                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
-                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                </div>
-              )}
+              {renderMessages('sm')}
             </div>
           )}
 
-          {/* Input area */}
           <div className={`${messages.length > 0 ? 'border-t border-white/5' : ''}`}>
             <div className="flex items-end gap-2 p-3">
               <textarea
@@ -246,11 +307,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           </div>
         </div>
 
-        {showModal && latestEstimate && (
+        {showModal && confirmedEstimate && (
           <BookingModal
             isOpen={showModal}
             onClose={() => setShowModal(false)}
-            estimate={latestEstimate}
+            estimate={confirmedEstimate}
             description={originalDescription}
           />
         )}
@@ -262,57 +323,12 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   return (
     <div className="max-w-3xl mx-auto">
       <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40 focus-within:shadow-[0_0_40px_-12px_rgba(52,211,153,0.15)]">
-        {/* Chat messages */}
         {messages.length > 0 && (
           <div ref={chatContainerRef} className="max-h-[500px] overflow-y-auto p-6 space-y-5">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-                {msg.role === 'ai' && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center mt-0.5">
-                    <Bot className="w-4 h-4 text-mint" />
-                  </div>
-                )}
-                <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} rounded-2xl px-5 py-4`}>
-                  <p className="text-white leading-relaxed">{msg.content}</p>
-                  {msg.estimate && <EstimateCard estimate={msg.estimate} />}
-                </div>
-                {msg.role === 'user' && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mt-0.5">
-                    <User className="w-4 h-4 text-silver" />
-                  </div>
-                )}
-              </div>
-            ))}
-            {/* Booking CTA inside chat */}
-            {latestEstimate && !loading && (
-              <div className="flex justify-center py-2">
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-mint text-midnight px-6 py-3.5 rounded-xl font-semibold transition-all duration-200 hover:bg-mint-hover"
-                >
-                  Boka ett gratis blueprint-möte
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            {loading && (
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-mint" />
-                </div>
-                <div className="bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4">
-                  <div className="flex gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
-                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
-                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
-                  </div>
-                </div>
-              </div>
-            )}
+            {renderMessages('lg')}
           </div>
         )}
 
-        {/* Input area */}
         <div className={`${messages.length > 0 ? 'border-t border-white/5' : ''}`}>
           <div className="flex items-end gap-3 p-4 lg:p-5">
             <textarea
@@ -351,12 +367,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         </div>
       </div>
 
-      {/* Booking Modal */}
-      {showModal && latestEstimate && (
+      {showModal && confirmedEstimate && (
         <BookingModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          estimate={latestEstimate}
+          estimate={confirmedEstimate}
           description={originalDescription}
         />
       )}

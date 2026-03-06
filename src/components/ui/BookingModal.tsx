@@ -37,6 +37,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
   const [namn, setNamn] = useState('');
   const [email, setEmail] = useState('');
   const [telefon, setTelefon] = useState('');
+  const [foretag, setForetag] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -73,8 +74,8 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
     e.preventDefault();
     setError('');
 
-    if (!namn.trim() || !email.trim()) {
-      setError('Fyll i namn och email.');
+    if (!namn.trim() || !email.trim() || !telefon.trim()) {
+      setError('Fyll i namn, email och telefon.');
       return;
     }
 
@@ -93,6 +94,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
           namn: namn.trim(),
           email: email.trim(),
           telefon: telefon.trim(),
+          foretag: foretag.trim() || undefined,
           description,
           estimate: {
             complexity: estimate.complexity,
@@ -113,7 +115,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
     } finally {
       setSubmitting(false);
     }
-  }, [namn, email, telefon, description, estimate]);
+  }, [namn, email, telefon, foretag, description, estimate]);
 
   if (!isOpen) return null;
 
@@ -240,16 +242,30 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
                 />
               </div>
             </div>
-            <div className="mb-4">
-              <label htmlFor="booking-telefon" className="block text-xs text-slate mb-1">Telefon (valfritt)</label>
-              <input
-                id="booking-telefon"
-                type="tel"
-                value={telefon}
-                onChange={(e) => setTelefon(e.target.value)}
-                placeholder="+46 70 123 45 67"
-                className="w-full px-3 py-2.5 rounded-lg bg-navy-mid border border-white/10 text-white text-sm placeholder:text-slate focus:outline-none focus:border-mint/40 transition-colors"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label htmlFor="booking-telefon" className="block text-xs text-slate mb-1">Telefon *</label>
+                <input
+                  id="booking-telefon"
+                  type="tel"
+                  value={telefon}
+                  onChange={(e) => setTelefon(e.target.value)}
+                  placeholder="+46 70 123 45 67"
+                  className="w-full px-3 py-2.5 rounded-lg bg-navy-mid border border-white/10 text-white text-sm placeholder:text-slate focus:outline-none focus:border-mint/40 transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="booking-foretag" className="block text-xs text-slate mb-1">Företag (valfritt)</label>
+                <input
+                  id="booking-foretag"
+                  type="text"
+                  value={foretag}
+                  onChange={(e) => setForetag(e.target.value)}
+                  placeholder="Företagsnamn"
+                  className="w-full px-3 py-2.5 rounded-lg bg-navy-mid border border-white/10 text-white text-sm placeholder:text-slate focus:outline-none focus:border-mint/40 transition-colors"
+                />
+              </div>
             </div>
 
             {error && (

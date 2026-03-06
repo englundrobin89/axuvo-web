@@ -12,6 +12,7 @@ export interface EstimateResult {
   understanding: string;
   recommendations: string[];
   considerations: string[];
+  question?: string;
 }
 
 // ─── AI-powered estimation via OpenRouter ───
@@ -20,7 +21,13 @@ const SYSTEM_PROMPT = `Du är en erfaren teknisk projektledare på Axuvo, ett sv
 
 Din uppgift: analysera en kundbeskrivning och ge en indikativ prisuppskattning.
 
-Svara ENBART med giltig JSON (inget annat). Strukturen:
+VIKTIGT — Om beskrivningen är väldigt vag eller otydlig (t.ex. bara ett ord, eller du verkligen inte kan förstå vad de vill bygga), ställ EN tydlig motfråga istället. Svara då med:
+{
+  "question": "Din fråga här"
+}
+Och INGET ANNAT. Bara question-fältet. Frågan ska vara varm, kort och hjälpa dig förstå vad de vill bygga.
+
+Om beskrivningen är tillräckligt tydlig (du förstår ungefär vad de vill), svara med giltig JSON:
 
 {
   "complexity": "Enkel" | "Medel" | "Komplex" | "Avancerad",
@@ -30,7 +37,7 @@ Svara ENBART med giltig JSON (inget annat). Strukturen:
   "summary": "2-3 meningar som visar att du förstått vad kunden vill bygga och varför det hamnar i denna prisklass",
   "features": ["Feature 1", "Feature 2", ...max 6 st],
   "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
-  "understanding": "En kort mening som sammanfattar vad kunden vill bygga, skriven direkt till kunden. Exempel: 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara vad de vill ha.",
+  "understanding": "1-2 meningar som sammanfattar vad kunden vill bygga, skriven direkt till kunden. Exempel: 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara din förståelse av idén, varm och personlig ton.",
   "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
   "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
@@ -43,10 +50,10 @@ Prisklasser:
 
 Regler:
 - Var realistisk, inte optimistisk
-- Om beskrivningen är vag, anta en rimlig mellannivå snarare än det billigaste
+- Om beskrivningen är vag men du ändå kan gissa vad de menar, gör en uppskattning — fråga BARA om det verkligen är omöjligt att förstå
 - summary ska vara personlig och specifik till kundens beskrivning, inte generisk
 - features ska vara konkreta tekniska funktioner som krävs
-- understanding ska vara en mening skriven direkt till kunden som visar att du förstått deras idé — varm och personlig ton
+- understanding ska vara 1-2 meningar skriven direkt till kunden som visar att du förstått deras idé — varm och personlig ton
 - recommendations ska vara 2-3 konkreta, actionable tips specifika för deras projekt
 - considerations ska vara 1-2 saker kunden bör tänka på (datamigration, integrationer, skalbarhet, etc.)
 - Skriv på svenska
@@ -89,6 +96,13 @@ async function estimateWithAI(description: string, clarification?: string): Prom
 
     const jsonStr = content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(jsonStr);
+
+    // If AI needs to ask a clarifying question
+    if (parsed.question && !parsed.complexity) {
+      return {
+        question: parsed.question,
+      } as unknown as EstimateResult;
+    }
 
     const validComplexities = ['Enkel', 'Medel', 'Komplex', 'Avancerad'] as const;
     const complexity = validComplexities.includes(parsed.complexity) ? parsed.complexity : 'Medel';
