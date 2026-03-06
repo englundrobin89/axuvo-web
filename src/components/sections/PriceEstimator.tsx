@@ -103,17 +103,28 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     if (!pendingEstimate || suggestMoreLoading) return;
     setSuggestMoreLoading(true);
     try {
-      // Gather all current feature names
+      // Split features into selected and deselected based on current toggle state
       const allFeatures = [
-        ...(pendingEstimate.suggestedFeatures || []).map(f => f.name),
-        ...customFeatures.map(f => f.name),
+        ...(pendingEstimate.suggestedFeatures || []),
+        ...customFeatures,
       ];
+      const selectedFeatures: string[] = [];
+      const deselectedFeatures: string[] = [];
+      allFeatures.forEach(f => {
+        const isSelected = featureSelection.get(f.name) ?? f.included;
+        if (isSelected) {
+          selectedFeatures.push(f.name);
+        } else {
+          deselectedFeatures.push(f.name);
+        }
+      });
       const res = await fetch('/api/suggest-features', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description: originalDescription,
-          existingFeatures: allFeatures,
+          selectedFeatures,
+          deselectedFeatures,
         }),
       });
       const data = await res.json();
