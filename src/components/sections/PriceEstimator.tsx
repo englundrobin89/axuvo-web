@@ -43,8 +43,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [showModal, setShowModal] = useState(false);
   // Feature selection state: map of feature name → selected boolean
   const [featureSelection, setFeatureSelection] = useState<Map<string, boolean>>(new Map());
+  // Custom feature input
+  const [customFeatures, setCustomFeatures] = useState<SuggestedFeature[]>([]);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customFeatureInput, setCustomFeatureInput] = useState('');
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const customFeatureInputRef = useRef<HTMLInputElement>(null);
 
   function autoResize(el: HTMLTextAreaElement) {
     el.style.height = 'auto';
@@ -73,6 +78,26 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     });
   }
 
+  function addCustomFeature() {
+    const name = customFeatureInput.trim();
+    if (!name) return;
+    // Don't add duplicates
+    if (featureSelection.has(name)) {
+      setCustomFeatureInput('');
+      setShowCustomInput(false);
+      return;
+    }
+    const newFeature: SuggestedFeature = { name, description: 'Tillagd av dig', included: true };
+    setCustomFeatures(prev => [...prev, newFeature]);
+    setFeatureSelection(prev => {
+      const next = new Map(prev);
+      next.set(name, true);
+      return next;
+    });
+    setCustomFeatureInput('');
+    setShowCustomInput(false);
+  }
+
   async function handleSend() {
     const text = input.trim();
     if (!text || loading || confirmLoading) return;
@@ -87,6 +112,9 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     // Reset feature selection and pending estimate when user sends new message
     setPendingEstimate(null);
     setFeatureSelection(new Map());
+    setCustomFeatures([]);
+    setShowCustomInput(false);
+    setCustomFeatureInput('');
 
     try {
       const desc = isFirst ? text : originalDescription;
@@ -219,11 +247,13 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   function FeatureChips() {
     if (!pendingEstimate?.suggestedFeatures || pendingEstimate.suggestedFeatures.length === 0) return null;
 
+    const allFeatures = [...pendingEstimate.suggestedFeatures, ...customFeatures];
+
     return (
       <div className="space-y-2.5">
         <p className="text-xs text-slate">Välj vilka funktioner som ska ingå:</p>
         <div className="flex flex-wrap gap-2">
-          {pendingEstimate.suggestedFeatures.map((feature) => {
+          {allFeatures.map((feature) => {
             const isSelected = featureSelection.get(feature.name) ?? feature.included;
             return (
               <button
@@ -248,6 +278,40 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               </button>
             );
           })}
+
+          {/* Add custom feature */}
+          {showCustomInput ? (
+            <div className="inline-flex items-center gap-1 rounded-full border border-mint/30 bg-mint/5 overflow-hidden">
+              <input
+                ref={customFeatureInputRef}
+                type="text"
+                value={customFeatureInput}
+                onChange={(e) => setCustomFeatureInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); addCustomFeature(); }
+                  if (e.key === 'Escape') { setShowCustomInput(false); setCustomFeatureInput(''); }
+                }}
+                placeholder="T.ex. SMS-notiser"
+                className="bg-transparent text-xs text-white placeholder-slate/50 px-3 py-1.5 w-32 sm:w-40 focus:outline-none"
+                autoFocus
+              />
+              <button
+                onClick={addCustomFeature}
+                disabled={!customFeatureInput.trim()}
+                className="px-2 py-1.5 text-mint hover:text-white transition-colors cursor-pointer disabled:opacity-30"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setShowCustomInput(true); setTimeout(() => customFeatureInputRef.current?.focus(), 50); }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-white/20 text-slate hover:border-mint/30 hover:text-mint transition-all cursor-pointer select-none"
+            >
+              <Plus className="w-3 h-3" />
+              Lägg till
+            </button>
+          )}
         </div>
       </div>
     );
