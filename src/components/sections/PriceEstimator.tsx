@@ -36,12 +36,15 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [originalDescription, setOriginalDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll chat container only (not the page)
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = chatContainerRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages, loading]);
 
   async function handleSend() {
@@ -159,7 +162,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
         <div className="bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
           {/* Chat messages */}
           {messages.length > 0 && (
-            <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
+            <div ref={chatContainerRef} className="max-h-[400px] overflow-y-auto p-4 space-y-4">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                   {msg.role === 'ai' && (
@@ -192,7 +195,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                   </div>
                 </div>
               )}
-              <div ref={chatEndRef} />
             </div>
           )}
 
@@ -255,7 +257,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
       <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40 focus-within:shadow-[0_0_40px_-12px_rgba(52,211,153,0.15)]">
         {/* Chat messages */}
         {messages.length > 0 && (
-          <div className="max-h-[500px] overflow-y-auto p-6 space-y-5">
+          <div ref={chatContainerRef} className="max-h-[500px] overflow-y-auto p-6 space-y-5">
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                 {msg.role === 'ai' && (
@@ -288,7 +290,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 </div>
               </div>
             )}
-            <div ref={chatEndRef} />
           </div>
         )}
 
