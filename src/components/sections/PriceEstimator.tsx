@@ -47,6 +47,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [customFeatures, setCustomFeatures] = useState<SuggestedFeature[]>([]);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customFeatureInput, setCustomFeatureInput] = useState('');
+  const [suggestMoreLoading, setSuggestMoreLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const customFeatureInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +62,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     if (el) {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages, loading, confirmLoading, pendingEstimate]);
+  }, [messages, loading, confirmLoading, pendingEstimate, customFeatures]);
 
   // Initialize feature selection when we get suggestedFeatures
   function initFeatureSelection(features: SuggestedFeature[]) {
@@ -98,6 +99,43 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     setShowCustomInput(false);
   }
 
+  async function handleSuggestMore() {
+    if (!pendingEstimate || suggestMoreLoading) return;
+    setSuggestMoreLoading(true);
+    try {
+      // Gather all current feature names
+      const allFeatures = [
+        ...(pendingEstimate.suggestedFeatures || []).map(f => f.name),
+        ...customFeatures.map(f => f.name),
+      ];
+      const res = await fetch('/api/suggest-features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: originalDescription,
+          existingFeatures: allFeatures,
+        }),
+      });
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        // Add new features as custom (so they don't disappear on re-render)
+        const newFeatures: SuggestedFeature[] = data.features.filter(
+          (f: SuggestedFeature) => !featureSelection.has(f.name)
+        );
+        setCustomFeatures(prev => [...prev, ...newFeatures]);
+        setFeatureSelection(prev => {
+          const next = new Map(prev);
+          newFeatures.forEach((f: SuggestedFeature) => next.set(f.name, false));
+          return next;
+        });
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setSuggestMoreLoading(false);
+    }
+  }
+
   async function handleSend() {
     const text = input.trim();
     if (!text || loading || confirmLoading) return;
@@ -109,10 +147,10 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     setInput('');
     if (inputRef.current) inputRef.current.style.height = 'auto';
     setLoading(true);
-    // Reset feature selection and pending estimate when user sends new message
+    // Save current feature state before resetting pending estimate
+    const prevFeatureSelection = new Map(featureSelection);
+    const prevCustomFeatures = [...customFeatures];
     setPendingEstimate(null);
-    setFeatureSelection(new Map());
-    setCustomFeatures([]);
     setShowCustomInput(false);
     setCustomFeatureInput('');
 
@@ -151,7 +189,24 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
       // AI understood — store estimate and show understanding + feature chips
       setPendingEstimate(data);
       if (data.suggestedFeatures && data.suggestedFeatures.length > 0) {
-        initFeatureSelection(data.suggestedFeatures);
+        // Merge: new AI features + previous custom features, preserving old selections
+        const mergedMap = new Map<string, boolean>();
+        data.suggestedFeatures.forEach((f: SuggestedFeature) => {
+          // If user had previously selected/deselected this feature, keep that choice
+          mergedMap.set(f.name, prevFeatureSelection.has(f.name) ? (prevFeatureSelection.get(f.name) ?? f.included) : f.included);
+        });
+        // Carry over custom features that aren't in the new AI suggestions
+        const newNames = new Set(data.suggestedFeatures.map((f: SuggestedFeature) => f.name));
+        const keptCustom = prevCustomFeatures.filter(f => !newNames.has(f.name));
+        keptCustom.forEach(f => {
+          mergedMap.set(f.name, prevFeatureSelection.get(f.name) ?? true);
+        });
+        setCustomFeatures(keptCustom);
+        setFeatureSelection(mergedMap);
+      } else {
+        // No new features from AI — keep previous state
+        setCustomFeatures(prevCustomFeatures);
+        setFeatureSelection(prevFeatureSelection);
       }
       setMessages((prev) => [...prev, {
         role: 'ai',
@@ -312,6 +367,20 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
               Lägg till
             </button>
           )}
+
+          {/* Suggest more features via AI */}
+          <button
+            onClick={handleSuggestMore}
+            disabled={suggestMoreLoading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-white/20 text-slate hover:border-mint/30 hover:text-mint transition-all cursor-pointer select-none disabled:opacity-50"
+          >
+            {suggestMoreLoading ? (
+              <div className="w-3 h-3 border-[1.5px] border-slate/30 border-t-mint rounded-full animate-spin" />
+            ) : (
+              <Sparkles className="w-3 h-3" />
+            )}
+            {suggestMoreLoading ? 'Tänker...' : 'Föreslå fler'}
+          </button>
         </div>
       </div>
     );
