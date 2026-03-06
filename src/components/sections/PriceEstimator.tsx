@@ -440,7 +440,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           </div>
         )}
 
-        <p className="text-sm text-silver leading-relaxed">{estimate.summary}</p>
+        <p className="text-base text-silver leading-relaxed">{estimate.summary}</p>
 
         {/* Blueprint + prototype CTA */}
         <div className="bg-mint/5 border border-mint/15 rounded-lg px-4 py-3 space-y-1">

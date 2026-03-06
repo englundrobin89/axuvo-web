@@ -35,7 +35,7 @@ STANDARDSVAR — ge alltid en fullständig uppskattning med JSON nedan. Gör dit
   "priceMin": number,
   "priceMax": number,
   "timelineWeeks": "X–Y",
-  "summary": "2-3 meningar som visar att du förstått vad kunden vill bygga och varför det hamnar i denna prisklass",
+  "summary": "3-5 meningar som visar att du verkligen förstått kundens vision. Beskriv vad som ska byggas, vilka nyckelfunktioner som ingår och varför det hamnar i denna prisklass. Var specifik och detaljerad — kunden ska känna att du har koll.",
   "features": ["Feature 1", "Feature 2", ...max 6 st],
   "suggestedFeatures": [
     { "name": "Funktionsnamn", "description": "Kort beskrivning av funktionen", "included": true },
