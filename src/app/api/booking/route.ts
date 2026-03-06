@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 
 interface BookingPayload {
   namn: string;
@@ -285,6 +286,29 @@ async function createNote(analysis: string, contactId: string, dealId: string | 
 
 // ─── API Handler ───
 
+async function processLeadInBackground(body: BookingPayload) {
+  try {
+    console.log(`Background: Processing lead for ${body.namn} (${body.email})`);
+
+    // Run AI analysis and HubSpot contact creation in parallel
+    const [analysis, contactId] = await Promise.all([
+      generateAnalysis(body),
+      createOrGetContact(body),
+    ]);
+
+    if (contactId) {
+      // Create deal, then note with both associations
+      const dealId = await createDeal(body, contactId);
+      await createNote(analysis, contactId, dealId);
+      console.log(`Background: Lead fully processed — contact ${contactId}, deal ${dealId}`);
+    } else {
+      console.error('Background: Could not create/find contact — skipping deal and note');
+    }
+  } catch (error) {
+    console.error('Background: Lead processing failed', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: BookingPayload = await request.json();
@@ -306,20 +330,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`=== NEW LEAD: ${namn} (${email}) ===`);
 
-    // Run AI analysis and HubSpot contact creation in parallel
-    const [analysis, contactId] = await Promise.all([
-      generateAnalysis(body),
-      createOrGetContact(body),
-    ]);
+    // Process AI analysis + HubSpot AFTER response is sent to customer
+    after(() => processLeadInBackground(body));
 
-    if (contactId) {
-      // Create deal and note (deal first, then note with both associations)
-      const dealId = await createDeal(body, contactId);
-      await createNote(analysis, contactId, dealId);
-    } else {
-      console.error('HubSpot: Could not create/find contact — skipping deal and note');
-    }
-
+    // Return immediately — customer sees success instantly
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Booking error:', error);
