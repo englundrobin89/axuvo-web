@@ -23,71 +23,14 @@ interface BookingPayload {
 
 // ─── AI Analysis with Claude Opus 4.6 ───
 
-async function generateAnalysis(payload: BookingPayload): Promise<string> {
+interface AnalysisResult {
+  analysis: string;
+  buildPrompt: string;
+}
+
+async function callOpus(prompt: string, maxTokens: number): Promise<string | null> {
   const apiKey = process.env.OPENROUTER_ANALYSIS_API_KEY;
-  if (!apiKey) return '[AI-analys kunde inte genereras — API-nyckel saknas]';
-
-  const conversationContext = payload.chatHistory?.length
-    ? payload.chatHistory.map(m => `${m.role === 'user' ? 'Kund' : 'Axuvo AI'}: ${m.content}`).join('\n\n')
-    : `Kund: ${payload.description}`;
-
-  const prompt = `Du är en senior teknisk arkitekt på Axuvo. Analysera följande kundkonversation och prisuppskattning och producera en fullständig intern analys.
-
-## Kundkonversation
-${conversationContext}
-
-## Prisuppskattning
-- Komplexitet: ${payload.estimate.complexity}
-- Prisintervall: ${payload.estimate.priceRange}
-- Tidslinje: ${payload.estimate.timelineWeeks} veckor
-- Valda funktioner: ${payload.estimate.features.join(', ')}
-- Sammanfattning: ${payload.estimate.summary}
-- Förvaltning: ${payload.estimate.monthlyFrom}
-
-## Kontaktinfo
-- Namn: ${payload.namn}
-- Företag: ${payload.foretag || 'Ej angivet'}
-- Email: ${payload.email}
-- Telefon: ${payload.telefon}
-
----
-
-Producera en strukturerad analys med följande sektioner:
-
-### 1. PROJEKTSAMMANFATTNING
-Sammanfatta vad kunden vill bygga, varför, och vem slutanvändarna är. 3-5 meningar.
-
-### 2. TEKNISK SPECIFIKATION
-- Rekommenderad arkitektur (t.ex. monolith, microservices, serverless)
-- Tech stack-förslag (frontend, backend, databas, hosting)
-- Tredjepartsintegrationer som behövs
-- Autentisering och säkerhetskrav
-
-### 3. FUNKTIONSLISTA MED PRIORITERING
-Dela upp i:
-- **Must-have (MVP)**: Funktioner som krävs för lansering
-- **Nice-to-have (v2)**: Funktioner som kan vänta till efter lansering
-- **Framtida potential**: Saker att tänka på för skalning
-
-### 4. RISKER OCH UTMANINGAR
-Identifiera 3-5 potentiella risker eller utmaningar med projektet.
-
-### 5. REKOMMENDATIONER INFÖR BLUEPRINT-MÖTE
-Konkreta frågor att ställa kunden och saker att förbereda inför mötet.
-
-### 6. BYGGPROMPT
-Skriv en komplett, detaljerad prompt som en utvecklare kan använda med en AI-kodassistent (t.ex. Claude) för att börja bygga den här appen. Prompten ska inkludera:
-- Projektbeskrivning och mål
-- Tech stack
-- Databasschema (tabeller och relationer)
-- API-endpoints som behövs
-- Komponentstruktur (frontend)
-- Autentiseringsflöde
-- Alla funktioner som ska implementeras
-
-Prompten ska vara på engelska och redo att använda direkt.
-
-Skriv analysen på svenska (förutom byggprompten som ska vara på engelska). Var konkret och specifik — detta är ett internt dokument för Axuvos team.`;
+  if (!apiKey) return null;
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -100,25 +43,130 @@ Skriv analysen på svenska (förutom byggprompten som ska vara på engelska). Va
       },
       body: JSON.stringify({
         model: 'anthropic/claude-opus-4-6',
-        messages: [
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
-        max_tokens: 4000,
+        max_tokens: maxTokens,
       }),
     });
 
     if (!response.ok) {
-      console.error('Analysis API error:', response.status, await response.text());
-      return '[AI-analys kunde inte genereras — API-fel]';
+      console.error('Opus API error:', response.status, await response.text());
+      return null;
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || '[AI-analys kunde inte genereras — tomt svar]';
+    return data.choices?.[0]?.message?.content || null;
   } catch (error) {
-    console.error('Analysis generation failed:', error);
-    return '[AI-analys kunde inte genereras — nätverksfel]';
+    console.error('Opus call failed:', error);
+    return null;
   }
+}
+
+async function generateAnalysis(payload: BookingPayload): Promise<AnalysisResult> {
+  const conversationContext = payload.chatHistory?.length
+    ? payload.chatHistory.map(m => `${m.role === 'user' ? 'Kund' : 'Axuvo AI'}: ${m.content}`).join('\n\n')
+    : `Kund: ${payload.description}`;
+
+  const contextBlock = `
+<kundkonversation>
+${conversationContext}
+</kundkonversation>
+
+<prisuppskattning>
+Komplexitet: ${payload.estimate.complexity}
+Prisintervall: ${payload.estimate.priceRange}
+Tidslinje: ${payload.estimate.timelineWeeks} veckor
+Valda funktioner: ${payload.estimate.features.join(', ')}
+Sammanfattning: ${payload.estimate.summary}
+Förvaltning: ${payload.estimate.monthlyFrom}
+</prisuppskattning>
+
+<kontaktinfo>
+Namn: ${payload.namn}
+Företag: ${payload.foretag || 'Ej angivet'}
+Email: ${payload.email}
+Telefon: ${payload.telefon}
+</kontaktinfo>`;
+
+  // Run both AI calls in parallel
+  const [analysisHtml, buildPromptHtml] = await Promise.all([
+    // Note 1: Project analysis
+    callOpus(`Du är en senior teknisk arkitekt på Axuvo. Analysera denna kundkonversation och producera en intern projektanalys.
+
+${contextBlock}
+
+Svara med REN HTML (ingen markdown, inga code blocks). Använd dessa HTML-taggar för formatering:
+- <h2> för sektionsrubriker
+- <h3> för underrubriker
+- <p> för text
+- <ul>/<li> för listor
+- <strong> för fetstil
+- <table><tr><th><td> för tabeller
+- <hr> för avdelare
+
+Producera dessa sektioner:
+
+<h2>📋 Projektsammanfattning</h2>
+Vad kunden vill bygga, varför, och vem slutanvändarna är. 4-6 meningar. Var specifik.
+
+<h2>🏗️ Teknisk specifikation</h2>
+Gör en tabell med kolumnerna "Område" och "Rekommendation":
+- Arkitektur (monolith/microservices/serverless)
+- Frontend (ramverk, språk)
+- Backend (ramverk, språk)
+- Databas
+- Hosting/infrastruktur
+- Autentisering
+- Tredjepartsintegrationer (lista alla som behövs)
+
+<h2>✅ Funktionslista med prioritering</h2>
+Tre separata listor:
+- <h3>Must-have (MVP)</h3> — funktioner som KRÄVS för lansering
+- <h3>Nice-to-have (v2)</h3> — kan vänta till efter lansering
+- <h3>Framtida potential</h3> — skalning och vidareutveckling
+
+<h2>⚠️ Risker och utmaningar</h2>
+4-6 konkreta risker med kort förklaring för varje.
+
+<h2>📅 Rekommendationer inför blueprint-möte</h2>
+- Konkreta frågor att ställa kunden
+- Saker att förbereda (skisser, wireframes, datamodeller)
+- Förslag på mötesagenda
+
+Skriv på svenska. Var konkret och specifik — detta läses av Axuvos utvecklarteam.`, 4000),
+
+    // Note 2: Build prompt
+    callOpus(`Du är en senior teknisk arkitekt. Baserat på denna kundkonversation, skriv en komplett BYGGPROMPT som en utvecklare kan ge till en AI-kodassistent (Claude, Cursor, etc.) för att börja bygga appen.
+
+${contextBlock}
+
+Svara med REN HTML (ingen markdown, inga code blocks). Formatera med <h2>, <h3>, <p>, <ul>/<li>, <pre><code> för kodexempel, <table> för tabeller.
+
+Byggprompten ska vara PÅ ENGELSKA och innehålla:
+
+<h2>🔧 Build Prompt</h2>
+<p><em>Ready-to-use prompt for AI code assistant</em></p>
+
+Sedan prompten inuti en tydlig <div style="background:#f5f5f5;padding:16px;border-radius:8px;border:1px solid #ddd;">:
+
+1. Project overview and goals
+2. Tech stack with specific versions
+3. Database schema — tabeller, kolumner, relationer, constraints (visa som tabell eller kodblock)
+4. API endpoints — method, path, description, request/response (visa som tabell)
+5. Frontend component tree / structure
+6. Authentication flow (steg för steg)
+7. Complete feature list with acceptance criteria
+8. File/folder structure
+9. Environment variables needed
+10. Deployment instructions
+
+Var extremt detaljerad. En utvecklare ska kunna ta denna prompt och börja bygga direkt utan att behöva gissa.`, 6000),
+  ]);
+
+  return {
+    analysis: analysisHtml || '<p><em>AI-analys kunde inte genereras</em></p>',
+    buildPrompt: buildPromptHtml || '<p><em>Byggprompt kunde inte genereras</em></p>',
+  };
 }
 
 // ─── HubSpot API helpers ───
@@ -236,29 +284,25 @@ async function createDeal(payload: BookingPayload, contactId: string): Promise<s
   }
 }
 
-async function createNote(analysis: string, contactId: string, dealId: string | null): Promise<void> {
+async function createNote(htmlBody: string, title: string, contactId: string, dealId: string | null): Promise<void> {
   try {
     const associations = [
       {
         to: { id: contactId },
-        types: [
-          {
-            associationCategory: 'HUBSPOT_DEFINED',
-            associationTypeId: 202, // note_to_contact
-          },
-        ],
+        types: [{
+          associationCategory: 'HUBSPOT_DEFINED' as const,
+          associationTypeId: 202,
+        }],
       },
     ];
 
     if (dealId) {
       associations.push({
         to: { id: dealId },
-        types: [
-          {
-            associationCategory: 'HUBSPOT_DEFINED',
-            associationTypeId: 214, // note_to_deal
-          },
-        ],
+        types: [{
+          associationCategory: 'HUBSPOT_DEFINED' as const,
+          associationTypeId: 214,
+        }],
       });
     }
 
@@ -268,19 +312,19 @@ async function createNote(analysis: string, contactId: string, dealId: string | 
       body: JSON.stringify({
         properties: {
           hs_timestamp: new Date().toISOString(),
-          hs_note_body: analysis,
+          hs_note_body: htmlBody,
         },
         associations,
       }),
     });
 
     if (res.ok) {
-      console.log('HubSpot: Created note with AI analysis');
+      console.log(`HubSpot: Created note "${title}"`);
     } else {
-      console.error('HubSpot: Failed to create note', res.status, await res.text());
+      console.error(`HubSpot: Failed to create note "${title}"`, res.status, await res.text());
     }
   } catch (error) {
-    console.error('HubSpot: Note creation error', error);
+    console.error(`HubSpot: Note creation error "${title}"`, error);
   }
 }
 
@@ -291,15 +335,21 @@ async function processLeadInBackground(body: BookingPayload) {
     console.log(`Background: Processing lead for ${body.namn} (${body.email})`);
 
     // Run AI analysis and HubSpot contact creation in parallel
-    const [analysis, contactId] = await Promise.all([
+    const [analysisResult, contactId] = await Promise.all([
       generateAnalysis(body),
       createOrGetContact(body),
     ]);
 
     if (contactId) {
-      // Create deal, then note with both associations
+      // Create deal first
       const dealId = await createDeal(body, contactId);
-      await createNote(analysis, contactId, dealId);
+
+      // Create two separate notes in parallel
+      await Promise.all([
+        createNote(analysisResult.analysis, 'Projektanalys', contactId, dealId),
+        createNote(analysisResult.buildPrompt, 'Byggprompt', contactId, dealId),
+      ]);
+
       console.log(`Background: Lead fully processed — contact ${contactId}, deal ${dealId}`);
     } else {
       console.error('Background: Could not create/find contact — skipping deal and note');
