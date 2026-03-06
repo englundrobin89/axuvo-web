@@ -42,7 +42,7 @@ STANDARDSVAR — ge alltid en fullständig uppskattning med JSON nedan. Gör dit
     { "name": "Valfri funktion", "description": "Kort beskrivning", "included": false }
   ],
   "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
-  "understanding": "2-3 meningar skriven direkt till kunden i en varm, personlig ton. Börja med 'Om jag har förstått dig rätt så vill du...' eller liknande. Sammanfatta HELA bilden — inklusive tidigare valda funktioner om det finns sådana. Ingen prisinfo här. Avsluta gärna med en uppmuntrande kommentar som 'Det låter som ett riktigt spännande projekt!' eller 'Bra tänkt!'",
+  "understanding": "2-3 meningar skriven direkt till kunden. Skriv som en kunnig vän — inte en robot. Variera hur du börjar (ALDRIG samma fras två gånger). Sammanfatta HELA bilden inklusive tidigare valda funktioner. Ingen prisinfo här. Var entusiastisk och genuin.",
   "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
   "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
@@ -67,7 +67,7 @@ Regler:
 - Om beskrivningen är vag, anta rimliga funktioner för den typen av projekt och ge en uppskattning
 - summary ska vara personlig och specifik till kundens beskrivning, inte generisk
 - features ska vara konkreta tekniska funktioner som krävs — FÖRESLÅ dem baserat på projekttypen
-- understanding ska vara 2-3 meningar skriven direkt till kunden. Börja alltid med "Om jag har förstått dig rätt..." eller liknande. Sammanfatta HELA bilden inklusive tidigare valda funktioner. Avsluta med något uppmuntrande. Var personlig och entusiastisk, inte klinisk.
+- understanding ska vara 2-3 meningar skriven direkt till kunden som en kunnig, engagerad rådgivare. Variera ditt språk — börja ALDRIG med samma fras. Exempel på bra öppningar: "Spännande! Så du tänker dig...", "Jag ser bilden — du vill...", "Kul idé! Det du beskriver är...", "Nice, så i grund och botten handlar det om...". Sammanfatta HELA bilden inklusive tidigare valda funktioner. Var genuin och entusiastisk, inte formell.
 - recommendations ska vara 2-3 konkreta, actionable tips specifika för deras projekt
 - considerations ska vara 1-2 saker kunden bör tänka på (datamigration, integrationer, skalbarhet, etc.)
 - Skriv på svenska

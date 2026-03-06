@@ -13,6 +13,7 @@ interface ChatMessage {
   showEstimate?: boolean;
   isQuestion?: boolean;
   confirmed?: boolean;
+  previousSelections?: string[];
 }
 
 interface PriceEstimatorProps {
@@ -141,13 +142,25 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     const isFirst = messages.length === 0;
     if (isFirst) setOriginalDescription(text);
 
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
-    setInput('');
-    if (inputRef.current) inputRef.current.style.height = 'auto';
-    setLoading(true);
     // Save current feature state before resetting pending estimate
     const prevFeatureSelection = new Map(featureSelection);
     const prevCustomFeatures = [...customFeatures];
+
+    // Gather previously selected feature names for display
+    const prevSelectedNames = !isFirst
+      ? Array.from(prevFeatureSelection.entries())
+          .filter(([, selected]) => selected)
+          .map(([name]) => name)
+      : [];
+
+    setMessages((prev) => [...prev, {
+      role: 'user',
+      content: text,
+      previousSelections: prevSelectedNames.length > 0 ? prevSelectedNames : undefined,
+    }]);
+    setInput('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
+    setLoading(true);
     setPendingEstimate(null);
     setShowCustomInput(false);
     setCustomFeatureInput('');
@@ -157,11 +170,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
       const currentMessages = [...messages, { role: 'user' as const, content: text }];
       const history = currentMessages.map(m => ({ role: m.role, content: m.content }));
 
-      // Gather previously selected features so AI knows the full picture
-      const prevSelected = Array.from(prevFeatureSelection.entries())
-        .filter(([, selected]) => selected)
-        .map(([name]) => name);
-
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,7 +177,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           description: desc,
           clarification: isFirst ? undefined : text,
           history: isFirst ? undefined : history,
-          previouslySelectedFeatures: isFirst ? undefined : prevSelected.length > 0 ? prevSelected : undefined,
+          previouslySelectedFeatures: isFirst ? undefined : prevSelectedNames.length > 0 ? prevSelectedNames : undefined,
         }),
       });
 
@@ -457,15 +465,32 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     return (
       <>
         {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-            {msg.role === 'ai' && (
-              <div className={`flex-shrink-0 ${iconSize} rounded-full bg-mint/10 flex items-center justify-center mt-0.5`}>
-                <Bot className={`${botIcon} text-mint`} />
+          <div key={i} className="space-y-2">
+            {/* Show previous selections summary above user follow-up */}
+            {msg.role === 'user' && msg.previousSelections && msg.previousSelections.length > 0 && (
+              <div className="flex justify-end">
+                <div className="max-w-[85%] bg-white/[0.02] border border-white/5 rounded-lg px-3 py-2">
+                  <p className="text-[10px] text-slate uppercase tracking-wider mb-1.5">Dina valda funktioner</p>
+                  <div className="flex flex-wrap gap-1">
+                    {msg.previousSelections.map((f, j) => (
+                      <span key={j} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-mint/10 border border-mint/20 text-mint">
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
-            <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} ${bubble}`}>
-              <p className={textClass}>{msg.content}</p>
-              {msg.estimate && msg.showEstimate && <EstimateCard estimate={msg.estimate} />}
+            <div className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+              {msg.role === 'ai' && (
+                <div className={`flex-shrink-0 ${iconSize} rounded-full bg-mint/10 flex items-center justify-center mt-0.5`}>
+                  <Bot className={`${botIcon} text-mint`} />
+                </div>
+              )}
+              <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} ${bubble}`}>
+                <p className={textClass}>{msg.content}</p>
+                {msg.estimate && msg.showEstimate && <EstimateCard estimate={msg.estimate} />}
+              </div>
             </div>
           </div>
         ))}
