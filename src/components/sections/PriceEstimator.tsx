@@ -5,19 +5,6 @@ import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckC
 import { BookingModal } from '@/components/ui/BookingModal';
 import type { EstimateResult, SuggestedFeature } from '@/app/api/estimate/route';
 
-const complexityColors: Record<string, string> = {
-  'Enkel': 'text-emerald-400',
-  'Medel': 'text-yellow-400',
-  'Komplex': 'text-orange-400',
-  'Avancerad': 'text-red-400',
-};
-
-const complexityBg: Record<string, string> = {
-  'Enkel': 'bg-emerald-400/10 border-emerald-400/20',
-  'Medel': 'bg-yellow-400/10 border-yellow-400/20',
-  'Komplex': 'bg-orange-400/10 border-orange-400/20',
-  'Avancerad': 'bg-red-400/10 border-red-400/20',
-};
 
 interface ChatMessage {
   role: 'user' | 'ai';
@@ -406,7 +393,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Layers className="w-3 h-3" /> Komplexitet
             </div>
-            <span className={`inline-block text-sm font-semibold px-2 py-0.5 rounded border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
+            <span className="inline-block text-sm font-semibold px-2 py-0.5 rounded border bg-mint/10 border-mint/20 text-mint">
               {estimate.complexity}
             </span>
           </div>
@@ -431,7 +418,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             </div>
             <div className="flex flex-wrap gap-1.5">
               {estimate.features.map((f, i) => (
-                <span key={i} className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
+                <span key={i} className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-mint/10 border-mint/20 text-mint">
                   {f}
                 </span>
               ))}
