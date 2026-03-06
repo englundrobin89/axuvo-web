@@ -168,7 +168,17 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     try {
       const desc = isFirst ? text : originalDescription;
       const currentMessages = [...messages, { role: 'user' as const, content: text }];
-      const history = currentMessages.map(m => ({ role: m.role, content: m.content }));
+      // Build richer history so AI sees its own previous responses fully
+      const history = currentMessages.map(m => {
+        if (m.role === 'ai' && m.estimate) {
+          // Include understanding + summary + features so AI remembers what it said
+          const parts = [m.content];
+          if (m.estimate.summary) parts.push(`[Min sammanfattning: ${m.estimate.summary}]`);
+          if (m.estimate.features?.length) parts.push(`[Funktioner jag föreslog: ${m.estimate.features.join(', ')}]`);
+          return { role: m.role, content: parts.join('\n') };
+        }
+        return { role: m.role, content: m.content };
+      });
 
       const res = await fetch('/api/estimate', {
         method: 'POST',
