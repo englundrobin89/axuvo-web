@@ -687,6 +687,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           onClose={() => setShowModal(false)}
           estimate={confirmedEstimate}
           description={originalDescription}
+          chatHistory={messages.map(m => ({ role: m.role, content: m.content }))}
         />
       )}
     </div>
