@@ -1,7 +1,6 @@
 import { Container } from '@/components/ui/Container';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import PriceEstimator from '@/components/sections/PriceEstimator';
-import { Sparkles } from 'lucide-react';
 
 interface EstimatorCTAProps {
   title?: string;
@@ -17,10 +16,6 @@ export function EstimatorCTA({
       <Container>
         <ScrollReveal variant="fade-up">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 text-mint text-sm font-medium mb-3">
-              <Sparkles className="w-4 h-4" />
-              Prisuppskattning
-            </div>
             <h2 className="text-2xl lg:text-3xl font-semibold text-white mb-3">
               {title}
             </h2>

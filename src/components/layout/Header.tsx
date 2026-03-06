@@ -154,11 +154,11 @@ export const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+          <Link href="/" className="flex-shrink-0 relative z-10">
             <Image
               src="/logos/axuvo-logo-dark.svg"
               alt="Axuvo"
-              width={32}
+              width={120}
               height={32}
               className="h-8 w-auto"
               priority

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Sparkles, Clock, ArrowRight, RotateCcw, TrendingUp, Layers, Zap, CheckCircle, Lightbulb, MessageSquare, Pencil } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, User, Bot } from 'lucide-react';
 import { BookingModal } from '@/components/ui/BookingModal';
 import type { EstimateResult } from '@/app/api/estimate/route';
 
@@ -19,212 +19,230 @@ const complexityBg: Record<string, string> = {
   'Avancerad': 'bg-red-400/10 border-red-400/20',
 };
 
+interface ChatMessage {
+  role: 'user' | 'ai';
+  content: string;
+  estimate?: EstimateResult;
+}
+
 interface PriceEstimatorProps {
   compact?: boolean;
 }
 
 export default function PriceEstimator({ compact = false }: PriceEstimatorProps) {
-  const [description, setDescription] = useState('');
-  const [result, setResult] = useState<EstimateResult | null>(null);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [latestEstimate, setLatestEstimate] = useState<EstimateResult | null>(null);
+  const [originalDescription, setOriginalDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [clarifying, setClarifying] = useState(false);
-  const [clarification, setClarification] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  async function handleEstimate(extraClarification?: string) {
-    if (!description.trim()) return;
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
+  async function handleSend() {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    const isFirstMessage = messages.length === 0;
+    if (isFirstMessage) setOriginalDescription(text);
+
+    // Add user message
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    setInput('');
     setLoading(true);
-    setError('');
-    setResult(null);
-    setConfirmed(false);
-    setClarifying(false);
 
     try {
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          description,
-          clarification: extraClarification || undefined,
+          description: isFirstMessage ? text : originalDescription,
+          clarification: isFirstMessage ? undefined : text,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Något gick fel.');
+        setMessages((prev) => [...prev, { role: 'ai', content: data.error || 'Något gick fel. Försök igen.' }]);
         return;
       }
 
-      setResult(data);
+      setLatestEstimate(data);
+      setMessages((prev) => [...prev, {
+        role: 'ai',
+        content: data.understanding,
+        estimate: data,
+      }]);
     } catch {
-      setError('Kunde inte nå servern. Försök igen.');
+      setMessages((prev) => [...prev, { role: 'ai', content: 'Kunde inte nå servern. Försök igen.' }]);
     } finally {
       setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }
-
-  function handleReset() {
-    setDescription('');
-    setResult(null);
-    setError('');
-    setConfirmed(false);
-    setClarifying(false);
-    setClarification('');
-  }
-
-  function handleClarify() {
-    setClarifying(true);
-  }
-
-  function handleSendClarification() {
-    if (!clarification.trim()) return;
-    handleEstimate(clarification);
-    setClarification('');
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      handleEstimate();
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   }
 
-  function handleClarificationKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      handleSendClarification();
-    }
+  // ─── Estimate result card (reused in both variants) ───
+  function EstimateCard({ estimate }: { estimate: EstimateResult }) {
+    return (
+      <div className="mt-3 space-y-3">
+        {/* Price/complexity/time grid */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-midnight/60 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
+              <Layers className="w-3 h-3" /> Komplexitet
+            </div>
+            <span className={`inline-block text-sm font-semibold px-2 py-0.5 rounded border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
+              {estimate.complexity}
+            </span>
+          </div>
+          <div className="bg-midnight/60 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
+              <TrendingUp className="w-3 h-3" /> Indikativt pris
+            </div>
+            <div className="text-sm font-semibold text-white">{estimate.priceRange}</div>
+          </div>
+          <div className="bg-midnight/60 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
+              <Clock className="w-3 h-3" /> Uppskattad tid
+            </div>
+            <div className="text-sm font-semibold text-white">ca {estimate.timelineWeeks} v</div>
+          </div>
+        </div>
+
+        {/* Features */}
+        {estimate.features.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-2">
+              <Zap className="w-3 h-3" /> Identifierade funktioner
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {estimate.features.map((f, i) => (
+                <span key={i} className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
+                  {f}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Summary + disclaimer */}
+        <p className="text-sm text-silver leading-relaxed">{estimate.summary}</p>
+        <p className="text-xs text-slate">
+          Baserat på liknande projekt vi byggt. Exakt pris och tidsplan sätts efter ett kostnadsfritt blueprint-möte.
+        </p>
+
+        {/* Maintenance */}
+        <div className="bg-white/[0.03] rounded-lg px-3 py-2 text-xs text-slate">
+          Förvaltning efter leverans från <span className="text-silver font-medium">{estimate.monthlyFrom}</span>
+        </div>
+      </div>
+    );
   }
 
   // ─── Compact variant ───
   if (compact) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40">
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Beskriv vad du vill bygga..."
-            rows={2}
-            className="w-full bg-transparent text-white placeholder-slate/60 px-5 pt-4 pb-1 text-base resize-none focus:outline-none"
-            disabled={loading}
-          />
-          <div className="flex items-center justify-end px-5 pb-3">
-            <button
-              onClick={() => handleEstimate()}
-              disabled={loading || !description.trim()}
-              className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
-                  Analyserar...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Få prisförslag
-                </>
+        <div className="bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+          {/* Chat messages */}
+          {messages.length > 0 && (
+            <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                  {msg.role === 'ai' && (
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-mint/10 flex items-center justify-center mt-0.5">
+                      <Bot className="w-3.5 h-3.5 text-mint" />
+                    </div>
+                  )}
+                  <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} rounded-xl px-4 py-3`}>
+                    <p className="text-sm text-white">{msg.content}</p>
+                    {msg.estimate && <EstimateCard estimate={msg.estimate} />}
+                  </div>
+                  {msg.role === 'user' && (
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center mt-0.5">
+                      <User className="w-3.5 h-3.5 text-silver" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {loading && (
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-mint/10 flex items-center justify-center">
+                    <Bot className="w-3.5 h-3.5 text-mint" />
+                  </div>
+                  <div className="bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
+                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
+                      <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </div>
               )}
-            </button>
+              <div ref={chatEndRef} />
+            </div>
+          )}
+
+          {/* Input area */}
+          <div className={`${messages.length > 0 ? 'border-t border-white/5' : ''}`}>
+            <div className="flex items-end gap-2 p-3">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={messages.length === 0 ? 'Beskriv vad du vill bygga...' : 'Förtydliga eller beskriv mer...'}
+                rows={1}
+                className="flex-1 bg-transparent text-white placeholder-slate/60 px-3 py-2 text-sm resize-none focus:outline-none"
+                disabled={loading}
+              />
+              <button
+                onClick={handleSend}
+                disabled={loading || !input.trim()}
+                className="flex-shrink-0 p-2.5 rounded-lg bg-mint text-midnight transition-all hover:bg-mint-hover disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {error && <div className="mt-3 text-red-400 text-sm text-center">{error}</div>}
-
-        {result && !confirmed && (
-          <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-mint/20 p-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-2 text-sm text-mint mb-3">
-              <MessageSquare className="w-4 h-4" />
-              Har vi förstått dig rätt?
-            </div>
-            <p className="text-white text-sm mb-4">{result.understanding}</p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setConfirmed(true)}
-                className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
-              >
-                <CheckCircle className="w-3.5 h-3.5" /> Ja, det stämmer
-              </button>
-              <button
-                onClick={handleClarify}
-                className="inline-flex items-center gap-2 border border-white/10 text-silver px-4 py-2 rounded-lg text-sm hover:border-white/20 hover:text-white transition-all"
-              >
-                <Pencil className="w-3.5 h-3.5" /> Nej, jag vill förtydliga
-              </button>
-            </div>
-            {clarifying && (
-              <div className="mt-4 animate-in fade-in duration-300">
-                <textarea
-                  value={clarification}
-                  onChange={(e) => setClarification(e.target.value)}
-                  onKeyDown={handleClarificationKeyDown}
-                  placeholder="Berätta mer om vad du menar..."
-                  rows={2}
-                  className="w-full bg-midnight/50 text-white placeholder-slate/60 px-4 py-3 rounded-lg border border-white/10 text-sm resize-none focus:outline-none focus:border-mint/40 transition-colors"
-                />
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={handleSendClarification}
-                    disabled={loading || !clarification.trim()}
-                    className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover disabled:opacity-40"
-                  >
-                    {loading ? 'Analyserar...' : 'Uppdatera'}
-                  </button>
-                </div>
-              </div>
-            )}
+        {/* Booking CTA */}
+        {latestEstimate && !loading && (
+          <div className="mt-4 flex justify-center animate-in fade-in duration-300">
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
+            >
+              Boka möte för att komma igång
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         )}
 
-        {result && confirmed && (
-          <div className="mt-5 bg-navy-mid/80 backdrop-blur-sm rounded-xl border border-white/10 p-5 animate-in fade-in duration-300">
-            <div className="flex items-center gap-2 text-sm text-silver mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-mint" />
-              Indikativ prisuppskattning
-            </div>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div>
-                <div className="text-xs text-slate uppercase tracking-wider mb-1">Komplexitet</div>
-                <div className={`text-lg font-bold ${complexityColors[result.complexity] || 'text-white'}`}>
-                  {result.complexity}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-slate uppercase tracking-wider mb-1">Pris</div>
-                <div className="text-lg font-bold text-white">{result.priceRange}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate uppercase tracking-wider mb-1">Tid</div>
-                <div className="text-lg font-bold text-white">ca {result.timelineWeeks} v</div>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setShowModal(true)}
-                className="inline-flex items-center gap-2 bg-mint text-midnight px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-mint-hover"
-              >
-                Boka möte <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleReset}
-                className="inline-flex items-center gap-2 border border-white/10 text-silver px-4 py-2 rounded-lg text-sm hover:border-white/20 hover:text-white transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" /> Ny idé
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showModal && result && (
+        {showModal && latestEstimate && (
           <BookingModal
             isOpen={showModal}
             onClose={() => setShowModal(false)}
-            estimate={result}
-            description={description}
+            estimate={latestEstimate}
+            description={originalDescription}
           />
         )}
       </div>
@@ -234,266 +252,105 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   // ─── Full variant (Build Studio hero) ───
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="relative">
-        <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40 focus-within:shadow-[0_0_40px_-12px_rgba(52,211,153,0.15)]">
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="En bokningsapp för ett gym med betalning och medlemshantering..."
-            rows={4}
-            className="w-full bg-transparent text-white placeholder-slate/60 px-6 pt-6 pb-2 text-lg resize-none focus:outline-none"
-            disabled={loading}
-          />
+      <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 focus-within:border-mint/40 focus-within:shadow-[0_0_40px_-12px_rgba(52,211,153,0.15)]">
+        {/* Chat messages */}
+        {messages.length > 0 && (
+          <div className="max-h-[500px] overflow-y-auto p-6 space-y-5">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                {msg.role === 'ai' && (
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center mt-0.5">
+                    <Bot className="w-4 h-4 text-mint" />
+                  </div>
+                )}
+                <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-mint/10 border border-mint/20' : 'bg-white/[0.03] border border-white/5'} rounded-2xl px-5 py-4`}>
+                  <p className="text-white leading-relaxed">{msg.content}</p>
+                  {msg.estimate && <EstimateCard estimate={msg.estimate} />}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mt-0.5">
+                    <User className="w-4 h-4 text-silver" />
+                  </div>
+                )}
+              </div>
+            ))}
+            {loading && (
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-mint" />
+                </div>
+                <div className="bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:0ms]" />
+                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:150ms]" />
+                    <div className="w-2 h-2 rounded-full bg-mint/40 animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+        )}
 
-          <div className="flex items-center justify-between px-6 pb-4">
-            <span className="text-xs text-slate/50">
-              {description.length > 0 ? `${description.length} tecken` : 'Ctrl+Enter för att skicka'}
-            </span>
-
+        {/* Input area */}
+        <div className={`${messages.length > 0 ? 'border-t border-white/5' : ''}`}>
+          <div className="flex items-end gap-3 p-4 lg:p-5">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={messages.length === 0
+                ? 'En bokningsapp för ett gym med betalning och medlemshantering...'
+                : 'Förtydliga eller berätta mer...'
+              }
+              rows={messages.length === 0 ? 3 : 1}
+              className="flex-1 bg-transparent text-white placeholder-slate/60 px-2 py-2 text-lg resize-none focus:outline-none"
+              disabled={loading}
+            />
             <button
-              onClick={() => handleEstimate()}
-              disabled={loading || !description.trim()}
-              className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              className="flex-shrink-0 p-3 rounded-xl bg-mint text-midnight transition-all hover:bg-mint-hover disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
-                  Analyserar...
-                </>
+                <div className="w-5 h-5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
+              ) : messages.length === 0 ? (
+                <Sparkles className="w-5 h-5" />
               ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Få prisförslag
-                </>
+                <Send className="w-5 h-5" />
               )}
             </button>
           </div>
+          {messages.length === 0 && (
+            <div className="px-6 pb-4">
+              <span className="text-xs text-slate/50">Enter för att skicka</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {error && <div className="mt-4 text-red-400 text-sm text-center">{error}</div>}
-
-      {/* Step 2: Understanding confirmation */}
-      {result && !confirmed && (
-        <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-mint/20 overflow-hidden">
-            <div className="px-6 pt-6 pb-4">
-              <div className="flex items-center gap-2 text-sm text-mint mb-4">
-                <MessageSquare className="w-4 h-4" />
-                Har vi förstått dig rätt?
-              </div>
-              <p className="text-white text-base leading-relaxed mb-4">
-                {result.understanding}
-              </p>
-
-              {/* Quick preview of estimate */}
-              <div className="grid grid-cols-3 gap-4 mb-5 p-4 rounded-xl bg-midnight/50">
-                <div>
-                  <div className="text-xs text-slate mb-1">Komplexitet</div>
-                  <span className={`inline-block text-sm font-medium px-2 py-0.5 rounded border ${complexityBg[result.complexity]} ${complexityColors[result.complexity]}`}>
-                    {result.complexity}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-xs text-slate mb-1">Indikativt pris</div>
-                  <div className="text-sm font-semibold text-white">{result.priceRange}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate mb-1">Uppskattad tid</div>
-                  <div className="text-sm font-semibold text-white">ca {result.timelineWeeks} veckor</div>
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setConfirmed(true)}
-                  className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Ja, det stämmer — visa mer
-                </button>
-                <button
-                  onClick={handleClarify}
-                  className="inline-flex items-center gap-2 border border-white/10 text-silver px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:border-white/20 hover:text-white"
-                >
-                  <Pencil className="w-4 h-4" />
-                  Nej, jag vill förtydliga
-                </button>
-              </div>
-
-              {/* Clarification textarea */}
-              {clarifying && (
-                <div className="mt-5 animate-in fade-in duration-300">
-                  <textarea
-                    value={clarification}
-                    onChange={(e) => setClarification(e.target.value)}
-                    onKeyDown={handleClarificationKeyDown}
-                    placeholder="Berätta mer om vad du vill bygga..."
-                    rows={3}
-                    className="w-full bg-midnight/50 text-white placeholder-slate/60 px-5 py-4 rounded-xl border border-white/10 text-sm resize-none focus:outline-none focus:border-mint/40 transition-colors"
-                    autoFocus
-                  />
-                  <div className="flex justify-end mt-3">
-                    <button
-                      onClick={handleSendClarification}
-                      disabled={loading || !clarification.trim()}
-                      className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
-                          Analyserar...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          Uppdatera uppskattning
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Full result + booking CTA */}
-      {result && confirmed && (
-        <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-navy-mid/80 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
-            <div className="px-6 pt-6 pb-4 border-b border-white/5">
-              <div className="flex items-center gap-2 text-sm text-silver">
-                <Sparkles className="w-4 h-4 text-mint" />
-                Indikativ prisuppskattning
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-px bg-white/5">
-              <div className="bg-midnight/50 p-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-2 uppercase tracking-wider">
-                  <Layers className="w-3.5 h-3.5" />
-                  Komplexitet
-                </div>
-                <div className={`text-xl font-bold ${complexityColors[result.complexity] || 'text-white'}`}>
-                  {result.complexity}
-                </div>
-              </div>
-              <div className="bg-midnight/50 p-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-2 uppercase tracking-wider">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  Indikativt pris
-                </div>
-                <div className="text-xl font-bold text-white">{result.priceRange}</div>
-              </div>
-              <div className="bg-midnight/50 p-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-2 uppercase tracking-wider">
-                  <Clock className="w-3.5 h-3.5" />
-                  Uppskattad tid
-                </div>
-                <div className="text-xl font-bold text-white">ca {result.timelineWeeks} veckor</div>
-              </div>
-            </div>
-
-            <div className="px-6 py-5 border-t border-white/5">
-              <p className="text-silver text-sm leading-relaxed">{result.summary}</p>
-              <p className="text-slate text-xs mt-3">
-                Baserat på liknande projekt vi byggt. Exakt pris och tidsplan sätts efter ett kostnadsfritt blueprint-möte.
-              </p>
-            </div>
-
-            {result.features.length > 0 && (
-              <div className="px-6 pb-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-3 uppercase tracking-wider">
-                  <Zap className="w-3.5 h-3.5" />
-                  Identifierade funktioner
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {result.features.map((feature, i) => (
-                    <span
-                      key={i}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                        complexityBg[result.complexity] || 'bg-white/5 border-white/10'
-                      } ${complexityColors[result.complexity] || 'text-white'}`}
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* AI Recommendations */}
-            {result.recommendations && result.recommendations.length > 0 && (
-              <div className="px-6 pb-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-3 uppercase tracking-wider">
-                  <Lightbulb className="w-3.5 h-3.5" />
-                  Våra rekommendationer
-                </div>
-                <ul className="space-y-2">
-                  {result.recommendations.map((rec, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-silver">
-                      <CheckCircle className="w-3.5 h-3.5 text-mint mt-0.5 flex-shrink-0" />
-                      {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Considerations */}
-            {result.considerations && result.considerations.length > 0 && (
-              <div className="px-6 pb-5">
-                <div className="flex items-center gap-2 text-xs text-slate mb-3 uppercase tracking-wider">
-                  Att tänka på
-                </div>
-                <ul className="space-y-2">
-                  {result.considerations.map((con, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate">
-                      <span className="text-yellow-400 mt-0.5">*</span>
-                      {con}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="px-6 pb-5">
-              <div className="bg-white/[0.03] rounded-lg px-4 py-3 text-xs text-slate">
-                Förvaltning efter leverans från <span className="text-silver font-medium">{result.monthlyFrom}</span>
-              </div>
-            </div>
-
-            <div className="px-6 pb-6 flex flex-wrap gap-3">
-              <button
-                onClick={() => setShowModal(true)}
-                className="inline-flex items-center gap-2 bg-mint text-midnight px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-mint-hover"
-              >
-                Boka möte för att komma igång
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleReset}
-                className="inline-flex items-center gap-2 border border-white/10 text-silver px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:border-white/20 hover:text-white"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Prova en annan idé
-              </button>
-            </div>
-          </div>
+      {/* Booking CTA - appears after estimate */}
+      {latestEstimate && !loading && (
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-mint text-midnight px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:bg-mint-hover"
+          >
+            Boka möte för att komma igång
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <span className="text-xs text-slate">eller skriv mer för att förtydliga</span>
         </div>
       )}
 
       {/* Booking Modal */}
-      {showModal && result && (
+      {showModal && latestEstimate && (
         <BookingModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          estimate={result}
-          description={description}
+          estimate={latestEstimate}
+          description={originalDescription}
         />
       )}
     </div>

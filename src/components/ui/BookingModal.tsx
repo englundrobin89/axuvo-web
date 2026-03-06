@@ -4,11 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   X,
   CheckCircle,
-  Sparkles,
   Clock,
   Layers,
   ArrowRight,
-  Lightbulb,
   AlertCircle,
   Loader2,
 } from 'lucide-react';
@@ -172,10 +170,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
 
           {/* Estimate Summary Card */}
           <div className="bg-navy-mid rounded-xl border border-white/5 p-5 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-4 h-4 text-mint" />
-              <span className="text-sm font-medium text-mint">Din prisuppskattning</span>
-            </div>
+            <span className="text-sm font-medium text-mint mb-4 block">Din prisuppskattning</span>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
@@ -203,24 +198,6 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
               ))}
             </div>
           </div>
-
-          {/* Recommendations */}
-          {estimate.recommendations && estimate.recommendations.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Lightbulb className="w-4 h-4 text-mint" />
-                <span className="text-sm font-medium text-white">Våra rekommendationer</span>
-              </div>
-              <ul className="space-y-1.5">
-                {estimate.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-silver">
-                    <CheckCircle className="w-3.5 h-3.5 text-mint mt-0.5 flex-shrink-0" />
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {/* Divider */}
           <div className="h-px bg-white/5 mb-6" />
