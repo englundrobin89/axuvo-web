@@ -21,13 +21,7 @@ const SYSTEM_PROMPT = `Du är en erfaren teknisk projektledare på Axuvo, ett sv
 
 Din uppgift: analysera en kundbeskrivning och ge en indikativ prisuppskattning.
 
-VIKTIGT — Om beskrivningen är väldigt vag eller otydlig (t.ex. bara ett ord, eller du verkligen inte kan förstå vad de vill bygga), ställ EN tydlig motfråga istället. Svara då med:
-{
-  "question": "Din fråga här"
-}
-Och INGET ANNAT. Bara question-fältet. Frågan ska vara varm, kort och hjälpa dig förstå vad de vill bygga.
-
-Om beskrivningen är tillräckligt tydlig (du förstår ungefär vad de vill), svara med giltig JSON:
+STANDARDSVAR — ge alltid en fullständig uppskattning med JSON nedan. Gör ditt bästa med den information du har. Anta rimliga funktioner baserat på vilken typ av projekt det handlar om.
 
 {
   "complexity": "Enkel" | "Medel" | "Komplex" | "Avancerad",
@@ -37,10 +31,15 @@ Om beskrivningen är tillräckligt tydlig (du förstår ungefär vad de vill), s
   "summary": "2-3 meningar som visar att du förstått vad kunden vill bygga och varför det hamnar i denna prisklass",
   "features": ["Feature 1", "Feature 2", ...max 6 st],
   "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
-  "understanding": "1-2 meningar som sammanfattar vad kunden vill bygga, skriven direkt till kunden. Exempel: 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara din förståelse av idén, varm och personlig ton.",
+  "understanding": "1-2 meningar som sammanfattar vad kunden vill bygga, skriven direkt till kunden. T.ex. 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara din förståelse av idén, varm och personlig ton.",
   "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
   "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
+
+UNDANTAG — Ställ en motfråga BARA om det är helt omöjligt att gissa vad kunden vill (t.ex. bara "hej" eller "app"). Då svarar du ENBART med:
+{ "question": "Din fråga här" }
+
+Viktigt: om kunden har gett dig NÅGON ledtråd om vad de vill bygga (t.ex. "en app för ett gym", "en webbshop", "intern portal"), GÖR EN UPPSKATTNING. Gissa vilka funktioner som rimligen ingår. Fråga aldrig "vilka specifika funktioner vill du ha?" — det är ditt jobb att föreslå dem.
 
 Prisklasser:
 - Enkel (25 000–60 000 kr): Enkla appar, landningssidor med funktionalitet, enkla bokningssystem. 2–4 veckor. Förvaltning från 3 900 kr/mån.
@@ -50,22 +49,43 @@ Prisklasser:
 
 Regler:
 - Var realistisk, inte optimistisk
-- Om beskrivningen är vag men du ändå kan gissa vad de menar, gör en uppskattning — fråga BARA om det verkligen är omöjligt att förstå
+- Om beskrivningen är vag, anta rimliga funktioner för den typen av projekt och ge en uppskattning
 - summary ska vara personlig och specifik till kundens beskrivning, inte generisk
-- features ska vara konkreta tekniska funktioner som krävs
+- features ska vara konkreta tekniska funktioner som krävs — FÖRESLÅ dem baserat på projekttypen
 - understanding ska vara 1-2 meningar skriven direkt till kunden som visar att du förstått deras idé — varm och personlig ton
 - recommendations ska vara 2-3 konkreta, actionable tips specifika för deras projekt
 - considerations ska vara 1-2 saker kunden bör tänka på (datamigration, integrationer, skalbarhet, etc.)
 - Skriv på svenska
 - Skriv "du" inte "ni"`;
 
-async function estimateWithAI(description: string, clarification?: string): Promise<EstimateResult | null> {
+interface ConversationMessage {
+  role: 'user' | 'ai';
+  content: string;
+}
+
+async function estimateWithAI(description: string, clarification?: string, history?: ConversationMessage[]): Promise<EstimateResult | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 
-  let userMessage = `Kundens beskrivning:\n\n"${description}"`;
-  if (clarification) {
-    userMessage += `\n\nKunden förtydligade:\n\n"${clarification}"`;
+  // Build messages array with conversation history
+  const messages: { role: string; content: string }[] = [
+    { role: 'system', content: SYSTEM_PROMPT },
+  ];
+
+  if (history && history.length > 0) {
+    // Include conversation history so AI sees context
+    for (const msg of history) {
+      messages.push({
+        role: msg.role === 'ai' ? 'assistant' : 'user',
+        content: msg.content,
+      });
+    }
+    // Latest message is the clarification
+    if (clarification) {
+      messages.push({ role: 'user', content: clarification });
+    }
+  } else {
+    messages.push({ role: 'user', content: `Kundens beskrivning:\n\n"${description}"` });
   }
 
   try {
@@ -79,10 +99,7 @@ async function estimateWithAI(description: string, clarification?: string): Prom
       },
       body: JSON.stringify({
         model: 'anthropic/claude-3.5-haiku',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userMessage },
-        ],
+        messages,
         temperature: 0.3,
         max_tokens: 700,
       }),
@@ -301,7 +318,7 @@ function fallbackEstimate(description: string): EstimateResult {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { description, clarification } = body;
+    const { description, clarification, history } = body;
 
     if (!description || typeof description !== 'string') {
       return NextResponse.json(
@@ -310,7 +327,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (description.trim().length < 5) {
+    if (description.trim().length < 3) {
       return NextResponse.json(
         { error: 'Ge oss lite mer detaljer så kan vi ge ett bättre prisförslag.' },
         { status: 400 }
@@ -318,7 +335,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Try AI first, fall back to keyword matching
-    const aiResult = await estimateWithAI(description, clarification);
+    const aiResult = await estimateWithAI(description, clarification, history);
     const result = aiResult ?? fallbackEstimate(description);
 
     return NextResponse.json(result);

@@ -69,12 +69,17 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
 
     try {
       const desc = isFirst ? text : originalDescription;
+      // Build history for context (so AI sees previous Q&A)
+      const currentMessages = [...messages, { role: 'user' as const, content: text }];
+      const history = currentMessages.map(m => ({ role: m.role, content: m.content }));
+
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description: desc,
           clarification: isFirst ? undefined : text,
+          history: isFirst ? undefined : history,
         }),
       });
 
