@@ -217,10 +217,14 @@ export default function Home() {
         title="Vi bygger det digitala ni behöver — snabbt, säkert och utan enterprise-prislapp"
         subtitle="Axuvo hjälper företag och människor som vill göra mer digitalt men inte har tid, kunskap eller trygghet att göra det själva."
         primaryCta={{
+          text: 'Boka ett gratis möte',
+          href: '/kontakt',
+        }}
+        secondaryCta={{
           text: 'Få ett prisförslag direkt',
           href: '/build-studio',
         }}
-        secondaryCta={{
+        tertiaryLink={{
           text: 'Se idékatalogen',
           href: '/build-studio/idekatalog',
         }}

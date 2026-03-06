@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Container } from '../ui/Container';
 
@@ -12,6 +13,7 @@ interface HeroProps {
   subtitle: string;
   primaryCta: CTA;
   secondaryCta?: CTA;
+  tertiaryLink?: CTA;
   trustText?: string;
   variant?: 'home' | 'service' | 'compact';
   badge?: string;
@@ -22,6 +24,7 @@ export const Hero: React.FC<HeroProps> = ({
   subtitle,
   primaryCta,
   secondaryCta,
+  tertiaryLink,
   trustText,
   variant = 'service',
   badge,
@@ -65,8 +68,17 @@ export const Hero: React.FC<HeroProps> = ({
                 </Button>
               )}
             </div>
+            {tertiaryLink && (
+              <a
+                href={tertiaryLink.href}
+                className="inline-flex items-center gap-1.5 text-sm text-silver hover:text-white transition-colors group"
+              >
+                {tertiaryLink.text}
+                <ArrowRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </a>
+            )}
             {trustText && (
-              <p className="text-sm text-slate">{trustText}</p>
+              <p className="text-sm text-slate mt-6">{trustText}</p>
             )}
           </div>
         </Container>
