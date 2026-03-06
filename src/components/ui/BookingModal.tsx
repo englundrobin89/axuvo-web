@@ -5,7 +5,6 @@ import {
   X,
   CheckCircle,
   Clock,
-  Layers,
   ArrowRight,
   AlertCircle,
   Loader2,
@@ -19,19 +18,6 @@ interface BookingModalProps {
   description: string;
 }
 
-const complexityColors: Record<string, string> = {
-  Enkel: 'text-emerald-400',
-  Medel: 'text-yellow-400',
-  Komplex: 'text-orange-400',
-  Avancerad: 'text-red-400',
-};
-
-const complexityBg: Record<string, string> = {
-  Enkel: 'bg-emerald-400/10 border-emerald-400/20',
-  Medel: 'bg-yellow-400/10 border-yellow-400/20',
-  Komplex: 'bg-orange-400/10 border-orange-400/20',
-  Avancerad: 'bg-red-400/10 border-red-400/20',
-};
 
 export function BookingModal({ isOpen, onClose, estimate, description }: BookingModalProps) {
   const [namn, setNamn] = useState('');
@@ -177,7 +163,7 @@ export function BookingModal({ isOpen, onClose, estimate, description }: Booking
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
               <div>
                 <p className="text-xs text-slate mb-1">Komplexitet</p>
-                <span className={`inline-block text-sm font-medium px-2 py-0.5 rounded border ${complexityBg[estimate.complexity]} ${complexityColors[estimate.complexity]}`}>
+                <span className="inline-block text-sm font-medium px-2 py-0.5 rounded border bg-mint/10 border-mint/20 text-mint">
                   {estimate.complexity}
                 </span>
               </div>
