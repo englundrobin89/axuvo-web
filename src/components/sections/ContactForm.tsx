@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '../ui/Button';
-import { Mail, Phone, CheckCircle } from 'lucide-react';
+import { CheckCircle, Sparkles } from 'lucide-react';
 
 interface FormData {
   namn: string;
@@ -13,6 +14,8 @@ interface FormData {
 }
 
 export const ContactForm: React.FC = () => {
+  const searchParams = useSearchParams();
+
   const [formData, setFormData] = useState<FormData>({
     namn: '',
     email: '',
@@ -23,6 +26,38 @@ export const ContactForm: React.FC = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [hasEstimate, setHasEstimate] = useState(false);
+
+  // Pre-fill from URL params (from price estimator)
+  useEffect(() => {
+    const arende = searchParams.get('arende');
+    const beskrivning = searchParams.get('beskrivning');
+    const komplexitet = searchParams.get('komplexitet');
+    const pris = searchParams.get('pris');
+    const tid = searchParams.get('tid');
+
+    if (beskrivning) {
+      let message = beskrivning;
+      if (komplexitet || pris || tid) {
+        message += '\n\n--- Prisuppskattning ---';
+        if (komplexitet) message += `\nKomplexitet: ${komplexitet}`;
+        if (pris) message += `\nPrisintervall: ${pris}`;
+        if (tid) message += `\nTidsram: ${tid}`;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        arende: arende || prev.arende,
+        meddelande: message,
+      }));
+      setHasEstimate(true);
+    } else if (arende) {
+      setFormData((prev) => ({
+        ...prev,
+        arende,
+      }));
+    }
+  }, [searchParams]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -34,7 +69,6 @@ export const ContactForm: React.FC = () => {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
     if (errors[name as keyof FormData]) {
       setErrors((prev) => ({
         ...prev,
@@ -72,7 +106,6 @@ export const ContactForm: React.FC = () => {
     // Simulate form submission
     setSubmitted(true);
 
-    // Reset after 5 seconds
     setTimeout(() => {
       setFormData({
         namn: '',
@@ -82,6 +115,7 @@ export const ContactForm: React.FC = () => {
         meddelande: '',
       });
       setSubmitted(false);
+      setHasEstimate(false);
     }, 5000);
   };
 
@@ -105,6 +139,16 @@ export const ContactForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Estimate banner */}
+      {hasEstimate && (
+        <div className="bg-mint/5 border border-mint/20 rounded-lg px-4 py-3 flex items-center gap-3">
+          <Sparkles className="w-4 h-4 text-mint flex-shrink-0" />
+          <p className="text-sm text-silver">
+            Din prisuppskattning är bifogad i meddelandet nedan. Fyll i dina kontaktuppgifter så hör vi av oss!
+          </p>
+        </div>
+      )}
+
       {/* Namn */}
       <div>
         <label htmlFor="namn" className="block text-white font-medium mb-2">
@@ -193,7 +237,7 @@ export const ContactForm: React.FC = () => {
           value={formData.meddelande}
           onChange={handleInputChange}
           placeholder="Berätta vad du behöver hjälp med..."
-          rows={5}
+          rows={6}
           className={`w-full bg-midnight border rounded-lg px-4 py-3 text-white placeholder-silver/50 focus:outline-none focus:ring-2 focus:ring-mint transition-colors resize-none ${
             errors.meddelande
               ? 'border-red-500'

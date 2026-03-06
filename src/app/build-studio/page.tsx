@@ -96,6 +96,18 @@ const ideaCards: IdeaCard[] = [
     priceRange: '150-350k',
     icon: <Rocket className="w-6 h-6" />,
   },
+  {
+    title: 'AI-plattform',
+    description: 'Intelligenta system med maskininlärning och avancerad dataanalys',
+    priceRange: '250-500k',
+    icon: <Bot className="w-6 h-6" />,
+  },
+  {
+    title: 'Fullskalig marknadsplats',
+    description: 'Tvåsidigt ekosystem med köpare, säljare, betalning och logistik',
+    priceRange: '350-600k+',
+    icon: <Globe className="w-6 h-6" />,
+  },
 ];
 
 const processSteps = [
@@ -216,44 +228,34 @@ export default function BuildStudioPage() {
       />
       <FAQPageJsonLd items={faqItems} />
 
-      {/* Hero Section */}
-      <Hero
-        variant="service"
-        badge="Build Studio"
-        title="Från idé till färdig produkt — snabbt, säkert och till fast pris"
-        subtitle="Vi bygger appar, portaler, system och arbetsflöden åt företag och människor som vill göra mer digitalt. Se resultat innan du spenderat en krona."
-        primaryCta={{
-          text: 'Boka gratis blueprint-möte',
-          href: '/kontakt',
-        }}
-        secondaryCta={{
-          text: 'Se idékatalogen',
-          href: '#ideas',
-        }}
-        trustText="Gratis prototyp inom 48h • Fast startkostnad • Säkerhet inbyggt"
-      />
+      {/* Hero with Price Estimator */}
+      <section className="relative overflow-hidden pt-16 pb-16 lg:pt-24 lg:pb-20">
+        {/* Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-mint/[0.03] rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-mint/10 to-transparent" />
+        </div>
 
-      {/* Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-
-      {/* Price Estimator Section */}
-      <section className="py-16 lg:py-24 relative overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute inset-0 bg-gradient-to-b from-mint/[0.02] via-transparent to-transparent pointer-events-none" />
         <Container>
-          <ScrollReveal variant="fade-up">
-            <div className="text-center mb-10">
-              <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-white mb-4">
-                Vad vill du bygga?
-              </h2>
-              <p className="text-lg text-silver max-w-xl mx-auto">
-                Beskriv din idé så ger vi dig en prisuppskattning direkt.
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal variant="fade-up" delay={100}>
+          <div className="relative max-w-4xl mx-auto text-center">
+            <span className="inline-block px-3 py-1 rounded-full bg-mint/10 text-mint text-sm font-medium mb-6">
+              Build Studio
+            </span>
+
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-semibold text-white mb-4 leading-tight">
+              Vad vill du <span className="text-mint">bygga</span>?
+            </h1>
+
+            <p className="text-lg text-silver max-w-xl mx-auto mb-10">
+              Beskriv din idé så får du en prisuppskattning direkt — vad det kostar för att vi ska bygga den.
+            </p>
+
             <PriceEstimator />
-          </ScrollReveal>
+
+            <p className="text-sm text-slate mt-8">
+              Gratis prototyp inom 48h • Fast startkostnad • Säkerhet inbyggt
+            </p>
+          </div>
         </Container>
       </section>
 
@@ -334,7 +336,7 @@ export default function BuildStudioPage() {
             </div>
           </ScrollReveal>
 
-          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerReveal variant="fade-up" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {ideaCards.map((card, index) => (
               <div
                 key={index}

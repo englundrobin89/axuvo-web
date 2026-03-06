@@ -5,6 +5,7 @@ import { ProcessSteps } from '@/components/sections/ProcessSteps';
 import { SecureByDesign } from '@/components/sections/SecureByDesign';
 import { FAQ } from '@/components/sections/FAQ';
 import { ContactCTA } from '@/components/sections/ContactCTA';
+import { EstimatorCTA } from '@/components/sections/EstimatorCTA';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { ScrollReveal, StaggerReveal } from '@/components/ui/ScrollReveal';
@@ -445,6 +446,15 @@ export default function Home() {
           <FAQ items={faqItems} sectionTitle="Vanliga frågor" />
         </section>
       </ScrollReveal>
+
+      {/* Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+      {/* Price Estimator CTA */}
+      <EstimatorCTA
+        title="Nyfiken på vad det kostar?"
+        subtitle="Beskriv din idé så får du en prisuppskattning direkt — helt utan förpliktelser."
+      />
 
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
