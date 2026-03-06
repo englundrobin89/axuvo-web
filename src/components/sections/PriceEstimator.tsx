@@ -157,6 +157,11 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
       const currentMessages = [...messages, { role: 'user' as const, content: text }];
       const history = currentMessages.map(m => ({ role: m.role, content: m.content }));
 
+      // Gather previously selected features so AI knows the full picture
+      const prevSelected = Array.from(prevFeatureSelection.entries())
+        .filter(([, selected]) => selected)
+        .map(([name]) => name);
+
       const res = await fetch('/api/estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,6 +169,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           description: desc,
           clarification: isFirst ? undefined : text,
           history: isFirst ? undefined : history,
+          previouslySelectedFeatures: isFirst ? undefined : prevSelected.length > 0 ? prevSelected : undefined,
         }),
       });
 

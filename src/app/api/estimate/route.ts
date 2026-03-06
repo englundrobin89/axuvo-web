@@ -42,7 +42,7 @@ STANDARDSVAR — ge alltid en fullständig uppskattning med JSON nedan. Gör dit
     { "name": "Valfri funktion", "description": "Kort beskrivning", "included": false }
   ],
   "monthlyFrom": "3 900" | "3 900" | "9 900" | "15 900",
-  "understanding": "1-2 meningar som sammanfattar vad kunden vill bygga, skriven direkt till kunden. T.ex. 'Du vill bygga en bokningsapp för ett gym där medlemmar kan boka klasser och betala online.' Ingen prisinfo här — bara din förståelse av idén, varm och personlig ton.",
+  "understanding": "2-3 meningar skriven direkt till kunden i en varm, personlig ton. Börja med 'Om jag har förstått dig rätt så vill du...' eller liknande. Sammanfatta HELA bilden — inklusive tidigare valda funktioner om det finns sådana. Ingen prisinfo här. Avsluta gärna med en uppmuntrande kommentar som 'Det låter som ett riktigt spännande projekt!' eller 'Bra tänkt!'",
   "recommendations": ["Rekommendation 1", "Rekommendation 2", "Rekommendation 3"],
   "considerations": ["Sak att tänka på 1", "Sak att tänka på 2"]
 }
@@ -67,7 +67,7 @@ Regler:
 - Om beskrivningen är vag, anta rimliga funktioner för den typen av projekt och ge en uppskattning
 - summary ska vara personlig och specifik till kundens beskrivning, inte generisk
 - features ska vara konkreta tekniska funktioner som krävs — FÖRESLÅ dem baserat på projekttypen
-- understanding ska vara 1-2 meningar skriven direkt till kunden som visar att du förstått deras idé — varm och personlig ton
+- understanding ska vara 2-3 meningar skriven direkt till kunden. Börja alltid med "Om jag har förstått dig rätt..." eller liknande. Sammanfatta HELA bilden inklusive tidigare valda funktioner. Avsluta med något uppmuntrande. Var personlig och entusiastisk, inte klinisk.
 - recommendations ska vara 2-3 konkreta, actionable tips specifika för deras projekt
 - considerations ska vara 1-2 saker kunden bör tänka på (datamigration, integrationer, skalbarhet, etc.)
 - Skriv på svenska
@@ -78,7 +78,7 @@ interface ConversationMessage {
   content: string;
 }
 
-async function estimateWithAI(description: string, clarification?: string, history?: ConversationMessage[], selectedFeatures?: string[]): Promise<EstimateResult | null> {
+async function estimateWithAI(description: string, clarification?: string, history?: ConversationMessage[], selectedFeatures?: string[], previouslySelectedFeatures?: string[]): Promise<EstimateResult | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 
@@ -95,9 +95,13 @@ async function estimateWithAI(description: string, clarification?: string, histo
         content: msg.content,
       });
     }
-    // Latest message is the clarification
-    if (clarification) {
-      messages.push({ role: 'user', content: clarification });
+    // Build clarification with feature context
+    let clarificationContent = clarification || '';
+    if (previouslySelectedFeatures && previouslySelectedFeatures.length > 0) {
+      clarificationContent = `${clarificationContent}\n\n[Kontext: Kunden har hittills valt dessa funktioner: ${previouslySelectedFeatures.join(', ')}. Ta hänsyn till dessa val i din nya sammanfattning — visa att du förstår HELA bilden, inte bara det senaste meddelandet.]`;
+    }
+    if (clarificationContent) {
+      messages.push({ role: 'user', content: clarificationContent });
     }
   } else if (selectedFeatures && selectedFeatures.length > 0) {
     // Re-estimate with selected features
@@ -350,7 +354,7 @@ function fallbackEstimate(description: string): EstimateResult {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { description, clarification, history, selectedFeatures } = body;
+    const { description, clarification, history, selectedFeatures, previouslySelectedFeatures } = body;
 
     if (!description || typeof description !== 'string') {
       return NextResponse.json(
@@ -367,7 +371,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Try AI first, fall back to keyword matching
-    const aiResult = await estimateWithAI(description, clarification, history, selectedFeatures);
+    const aiResult = await estimateWithAI(description, clarification, history, selectedFeatures, previouslySelectedFeatures);
     const result = aiResult ?? fallbackEstimate(description);
 
     return NextResponse.json(result);
