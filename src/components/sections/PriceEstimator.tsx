@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckCircle, Plus } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, TrendingUp, Layers, Zap, Send, Bot, CheckCircle, Plus, X } from 'lucide-react';
 import { BookingModal } from '@/components/ui/BookingModal';
 import type { EstimateResult, SuggestedFeature } from '@/app/api/estimate/route';
 
@@ -427,6 +427,107 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
 
   // ─── Estimate card ───
   function EstimateCard({ estimate }: { estimate: EstimateResult }) {
+    // Track which features are toggled off in the estimate card
+    const [removedFeatures, setRemovedFeatures] = useState<Set<string>>(new Set());
+    const [recalculating, setRecalculating] = useState(false);
+    // Override pricing data from recalculation
+    const [priceOverride, setPriceOverride] = useState<{
+      complexity: string;
+      priceRange: string;
+      priceMin: number;
+      priceMax: number;
+      timelineWeeks: string;
+      summary: string;
+      monthlyFrom: string;
+    } | null>(null);
+    const recalcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const activeFeatures = estimate.features.filter(f => !removedFeatures.has(f));
+
+    // Display values — use recalculated override when available
+    const displayComplexity = priceOverride?.complexity ?? estimate.complexity;
+    const displayPriceRange = priceOverride?.priceRange ?? estimate.priceRange;
+    const displayTimeline = priceOverride?.timelineWeeks ?? estimate.timelineWeeks;
+    const displaySummary = priceOverride?.summary ?? estimate.summary;
+    const displayMonthly = priceOverride?.monthlyFrom ?? estimate.monthlyFrom;
+
+    async function recalculatePrice(features: string[]) {
+      if (features.length === 0) return;
+      setRecalculating(true);
+      try {
+        const res = await fetch('/api/estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: originalDescription,
+            selectedFeatures: features,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.complexity) {
+          setPriceOverride({
+            complexity: data.complexity,
+            priceRange: data.priceRange,
+            priceMin: data.priceMin,
+            priceMax: data.priceMax,
+            timelineWeeks: data.timelineWeeks,
+            summary: data.summary,
+            monthlyFrom: data.monthlyFrom,
+          });
+          // Update confirmedEstimate for BookingModal
+          if (confirmedEstimate) {
+            setConfirmedEstimate(prev => prev ? {
+              ...prev,
+              complexity: data.complexity,
+              priceRange: data.priceRange,
+              priceMin: data.priceMin,
+              priceMax: data.priceMax,
+              timelineWeeks: data.timelineWeeks,
+              summary: data.summary,
+              monthlyFrom: data.monthlyFrom,
+              features,
+            } : prev);
+          }
+        }
+      } catch {
+        // Silently fail — keep current values
+      } finally {
+        setRecalculating(false);
+      }
+    }
+
+    function toggleEstimateFeature(feature: string) {
+      const newRemoved = new Set(removedFeatures);
+      if (newRemoved.has(feature)) {
+        newRemoved.delete(feature);
+      } else {
+        newRemoved.add(feature);
+      }
+      setRemovedFeatures(newRemoved);
+
+      const newActiveFeatures = estimate.features.filter(f => !newRemoved.has(f));
+
+      // Update confirmedEstimate features immediately for BookingModal
+      if (confirmedEstimate) {
+        setConfirmedEstimate(prev => prev ? { ...prev, features: newActiveFeatures } : prev);
+      }
+
+      // Reset override if all features are back
+      if (newRemoved.size === 0) {
+        setPriceOverride(null);
+        if (recalcTimer.current) clearTimeout(recalcTimer.current);
+        return;
+      }
+
+      // Debounce API call for price recalculation (600ms)
+      if (recalcTimer.current) clearTimeout(recalcTimer.current);
+      if (newActiveFeatures.length > 0) {
+        recalcTimer.current = setTimeout(() => {
+          recalculatePrice(newActiveFeatures);
+        }, 600);
+      }
+    }
+
     return (
       <div className="mt-3 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -434,40 +535,77 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Layers className="w-3 h-3" /> Komplexitet
             </div>
-            <span className="inline-block text-sm font-semibold px-2 py-0.5 rounded border bg-mint/10 border-mint/20 text-mint">
-              {estimate.complexity}
+            <span className={`inline-block text-sm font-semibold px-2 py-0.5 rounded border bg-mint/10 border-mint/20 text-mint transition-opacity ${recalculating ? 'opacity-40' : ''}`}>
+              {displayComplexity}
             </span>
           </div>
           <div className="bg-midnight/60 rounded-lg p-3 text-left">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <TrendingUp className="w-3 h-3" /> Indikativt pris
             </div>
-            <div className="text-sm font-semibold text-white">{estimate.priceRange}</div>
+            <div className={`text-sm font-semibold text-white transition-opacity ${recalculating ? 'opacity-40' : ''}`}>
+              {recalculating ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <div className="w-3 h-3 border-[1.5px] border-mint/30 border-t-mint rounded-full animate-spin" />
+                  Räknar om...
+                </span>
+              ) : displayPriceRange}
+            </div>
           </div>
           <div className="bg-midnight/60 rounded-lg p-3 text-left">
             <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-1">
               <Clock className="w-3 h-3" /> Uppskattad tid
             </div>
-            <div className="text-sm font-semibold text-white">ca {estimate.timelineWeeks} v</div>
+            <div className={`text-sm font-semibold text-white transition-opacity ${recalculating ? 'opacity-40' : ''}`}>
+              ca {displayTimeline} v
+            </div>
           </div>
         </div>
 
         {estimate.features.length > 0 && (
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider mb-2">
-              <Zap className="w-3 h-3" /> Valda funktioner
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-[10px] text-slate uppercase tracking-wider">
+                <Zap className="w-3 h-3" /> Funktioner i uppskattningen
+              </div>
+              <span className="text-[10px] text-slate/60">Klicka för att justera priset</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {estimate.features.map((f, i) => (
-                <span key={i} className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-mint/10 border-mint/20 text-mint">
-                  {f}
-                </span>
-              ))}
+              {estimate.features.map((f, i) => {
+                const isRemoved = removedFeatures.has(f);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => toggleEstimateFeature(f)}
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
+                      isRemoved
+                        ? 'bg-white/5 border-white/10 text-slate line-through opacity-50 hover:border-mint/30 hover:text-mint/70'
+                        : 'bg-mint/10 border-mint/20 text-mint hover:bg-mint/5 hover:border-red-400/30 hover:text-red-300'
+                    }`}
+                  >
+                    {isRemoved ? <Plus className="w-3 h-3 inline mr-1" /> : <X className="w-3 h-3 inline mr-1" />}
+                    {f}
+                  </button>
+                );
+              })}
             </div>
+            {removedFeatures.size > 0 && (
+              <p className="text-[11px] text-mint/70 mt-1.5">
+                {activeFeatures.length} av {estimate.features.length} funktioner valda
+                {priceOverride && !recalculating && priceOverride.complexity !== estimate.complexity
+                  ? ` — priset sänktes till ${priceOverride.complexity}`
+                  : ' — priset uppdateras automatiskt'}
+              </p>
+            )}
           </div>
         )}
 
-        <p className="text-base text-silver leading-relaxed">{estimate.summary}</p>
+        <p className={`text-base text-silver leading-relaxed transition-opacity ${recalculating ? 'opacity-40' : ''}`}>{displaySummary}</p>
+
+        {/* Indikativt pris notice */}
+        <div className="bg-white/[0.02] border border-white/5 rounded-lg px-3 py-2 text-xs text-slate">
+          💡 Detta är en <span className="text-silver">indikativ uppskattning</span> baserad på din beskrivning. Exakt pris bestäms efter ett blueprint-möte där vi går igenom projektet i detalj.
+        </div>
 
         {/* Blueprint + prototype CTA */}
         <div className="bg-mint/5 border border-mint/15 rounded-lg px-4 py-3 space-y-1">
@@ -475,8 +613,8 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
           <p className="text-xs text-silver">Du får en klickbar prototyp inom 48 timmar och ett exakt prisförslag — helt utan kostnad eller förpliktelse.</p>
         </div>
 
-        <div className="bg-white/[0.03] rounded-lg px-3 py-2 text-xs text-slate">
-          Förvaltning efter leverans från <span className="text-silver font-medium">{estimate.monthlyFrom}</span>
+        <div className={`bg-white/[0.03] rounded-lg px-3 py-2 text-xs text-slate transition-opacity ${recalculating ? 'opacity-40' : ''}`}>
+          Förvaltning efter leverans från <span className="text-silver font-medium">{displayMonthly}</span>
         </div>
       </div>
     );

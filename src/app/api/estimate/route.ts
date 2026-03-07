@@ -82,18 +82,23 @@ suggestedFeatures: 8-10 st. 4-6 "included": true (kärnfunktioner), 2-4 "include
 
 OM KUNDEN SKICKAR VALDA FUNKTIONER (selectedFeatures): Räkna om pris baserat på exakt de funktionerna.
 
-Prisklasser:
-- Enkel (25 000–60 000 kr): Enkla appar, landningssidor, bokningssystem. 2–4 v. Förvaltning 3 900 kr/mån.
-- Medel (60 000–150 000 kr): Kundportaler, interna system, automation. 4–6 v. Förvaltning 3 900 kr/mån.
-- Komplex (150 000–350 000 kr): AI-funktioner, SaaS, komplexa plattformar. 6–10 v. Förvaltning 9 900 kr/mån.
-- Avancerad (350 000–600 000 kr): Marknadsplatser, AI-plattformar, enterprise. 10–16 v. Förvaltning 15 900 kr/mån.
+Prisklasser (välj konservativt — hellre en nivå lägre än en nivå högre):
+- Enkel (25 000–75 000 kr): Enkla appar, landningssidor, bokningssystem, portfolios, dashboards. 2–4 v. Förvaltning 3 900 kr/mån.
+- Medel (75 000–180 000 kr): Kundportaler, interna system, automation, enklare SaaS, e-handel. 4–8 v. Förvaltning 3 900 kr/mån.
+- Komplex (180 000–400 000 kr): AI-funktioner, multi-tenant SaaS, komplexa plattformar med många integrationer. 8–12 v. Förvaltning 9 900 kr/mån.
+- Avancerad (400 000–700 000 kr): Marknadsplatser med flera användartyper, AI-plattformar, enterprise med avancerade säkerhetskrav. 12–18 v. Förvaltning 15 900 kr/mån.
+
+PRISSÄTTNINGSSTRATEGI:
+- Välj ALLTID den lägre komplexitetsnivån om det är tveksamt. Vi vill ge en tillgänglig indikation — det exakta priset bestäms i blueprint-mötet.
+- I summary-fältet: Förklara KONKRET vad som driver priset. T.ex. "De största kostnadsposterna är betalningsintegrationen och rollbaserad åtkomst. Vill du börja enklare kan du skjuta upp rollhanteringen till fas 2."
+- Ge alltid kunden en hint om vad de kan ta bort för att sänka priset.
 
 Regler:
 - Skriv på svenska, "du" inte "ni"
-- Var realistisk med priser
 - Variera ditt språk — upprepa aldrig samma fraser
 - Om beskrivningen är vag men du kan gissa bransch/typ, GÖR EN UPPSKATTNING och gissa rimliga funktioner
-- Om du absolut inte kan gissa, ställ EN specifik fråga (inte "berätta mer" utan "vad ska appen göra?")`;
+- Om du absolut inte kan gissa, ställ EN specifik fråga (inte "berätta mer" utan "vad ska appen göra?")
+- Priset är INDIKATIVT — betona att exakt pris ges efter blueprint-mötet`;
 
 interface ConversationMessage {
   role: 'user' | 'ai';
@@ -321,29 +326,29 @@ function fallbackEstimate(description: string): EstimateResult {
   let timelineWeeks: string;
   let monthlyFrom: string;
 
-  if (totalScore <= 4) {
+  if (totalScore <= 6) {
     complexity = 'Enkel';
     priceMin = 25000;
-    priceMax = 60000;
+    priceMax = 75000;
     timelineWeeks = '2–4';
     monthlyFrom = '3 900';
-  } else if (totalScore <= 10) {
+  } else if (totalScore <= 14) {
     complexity = 'Medel';
-    priceMin = 60000;
-    priceMax = 150000;
-    timelineWeeks = '4–6';
+    priceMin = 75000;
+    priceMax = 180000;
+    timelineWeeks = '4–8';
     monthlyFrom = '3 900';
-  } else if (totalScore <= 18) {
+  } else if (totalScore <= 22) {
     complexity = 'Komplex';
-    priceMin = 150000;
-    priceMax = 350000;
-    timelineWeeks = '6–10';
+    priceMin = 180000;
+    priceMax = 400000;
+    timelineWeeks = '8–12';
     monthlyFrom = '9 900';
   } else {
     complexity = 'Avancerad';
-    priceMin = 350000;
-    priceMax = 600000;
-    timelineWeeks = '10–16';
+    priceMin = 400000;
+    priceMax = 700000;
+    timelineWeeks = '12–18';
     monthlyFrom = '15 900';
   }
 
