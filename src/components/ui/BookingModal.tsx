@@ -25,6 +25,7 @@ export function BookingModal({ isOpen, onClose, estimate, description, chatHisto
   const [email, setEmail] = useState('');
   const [telefon, setTelefon] = useState('');
   const [foretag, setForetag] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -71,6 +72,11 @@ export function BookingModal({ isOpen, onClose, estimate, description, chatHisto
       return;
     }
 
+    if (!acceptedTerms) {
+      setError('Du behöver godkänna villkoren för att gå vidare.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -95,6 +101,7 @@ export function BookingModal({ isOpen, onClose, estimate, description, chatHisto
             monthlyFrom: estimate.monthlyFrom,
           },
           chatHistory,
+          acceptedTerms: true,
         }),
       });
 
@@ -105,7 +112,7 @@ export function BookingModal({ isOpen, onClose, estimate, description, chatHisto
     } finally {
       setSubmitting(false);
     }
-  }, [namn, email, telefon, foretag, description, estimate, chatHistory]);
+  }, [namn, email, telefon, foretag, acceptedTerms, description, estimate, chatHistory]);
 
   if (!isOpen) return null;
 
@@ -257,6 +264,26 @@ export function BookingModal({ isOpen, onClose, estimate, description, chatHisto
                 />
               </div>
             </div>
+
+            {/* Terms checkbox */}
+            <label className="flex items-start gap-3 mb-4 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-navy-mid text-mint focus:ring-mint/30 focus:ring-offset-0 cursor-pointer accent-emerald-400"
+              />
+              <span className="text-xs text-silver leading-relaxed">
+                Jag godkänner{' '}
+                <a href="/villkor" target="_blank" rel="noopener noreferrer" className="text-mint hover:text-mint/80 underline underline-offset-2">
+                  allmänna villkor
+                </a>{' '}
+                och{' '}
+                <a href="/integritet" target="_blank" rel="noopener noreferrer" className="text-mint hover:text-mint/80 underline underline-offset-2">
+                  integritetspolicyn
+                </a>
+              </span>
+            </label>
 
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-400 mb-3">

@@ -19,6 +19,7 @@ interface BookingPayload {
     monthlyFrom: string;
   };
   chatHistory?: { role: string; content: string }[];
+  acceptedTerms?: boolean;
 }
 
 // ─── AI Analysis with Claude Opus 4.6 ───
@@ -428,7 +429,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`=== NEW LEAD: ${namn} (${email}) ===`);
+    console.log(`=== NEW LEAD: ${namn} (${email}) | Terms accepted: ${body.acceptedTerms ?? false} ===`);
 
     // Process AI analysis + HubSpot AFTER response is sent to customer
     after(() => processLeadInBackground(body));
