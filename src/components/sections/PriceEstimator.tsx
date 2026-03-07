@@ -211,19 +211,36 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
       // AI understood — store estimate and show understanding + feature chips
       setPendingEstimate(data);
       if (data.suggestedFeatures && data.suggestedFeatures.length > 0) {
-        // Merge: new AI features + previous custom features, preserving old selections
+        // Merge: new AI features + ALL previously selected features + custom features
         const mergedMap = new Map<string, boolean>();
+        const newNames = new Set(data.suggestedFeatures.map((f: SuggestedFeature) => f.name));
+
+        // 1. Add all new AI-suggested features, preserving user's previous toggle state
         data.suggestedFeatures.forEach((f: SuggestedFeature) => {
-          // If user had previously selected/deselected this feature, keep that choice
           mergedMap.set(f.name, prevFeatureSelection.has(f.name) ? (prevFeatureSelection.get(f.name) ?? f.included) : f.included);
         });
-        // Carry over custom features that aren't in the new AI suggestions
-        const newNames = new Set(data.suggestedFeatures.map((f: SuggestedFeature) => f.name));
+
+        // 2. Carry over ALL previously selected features that AI didn't include in new suggestions
+        const carryOverFeatures: SuggestedFeature[] = [];
+        prevFeatureSelection.forEach((wasSelected, name) => {
+          if (!newNames.has(name) && wasSelected) {
+            mergedMap.set(name, true);
+            // Check if it was a custom feature or an AI-suggested one
+            const isCustom = prevCustomFeatures.some(f => f.name === name);
+            if (!isCustom) {
+              // Was an AI feature from a previous round — carry over as custom
+              carryOverFeatures.push({ name, description: 'Tidigare vald', included: true });
+            }
+          }
+        });
+
+        // 3. Carry over custom features that aren't in new AI suggestions
         const keptCustom = prevCustomFeatures.filter(f => !newNames.has(f.name));
         keptCustom.forEach(f => {
           mergedMap.set(f.name, prevFeatureSelection.get(f.name) ?? true);
         });
-        setCustomFeatures(keptCustom);
+
+        setCustomFeatures([...keptCustom, ...carryOverFeatures]);
         setFeatureSelection(mergedMap);
       } else {
         // No new features from AI — keep previous state
