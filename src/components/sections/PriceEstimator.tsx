@@ -36,6 +36,19 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customFeatureInput, setCustomFeatureInput] = useState('');
   const [suggestMoreLoading, setSuggestMoreLoading] = useState(false);
+  // ─── EstimateCard state (lifted up to survive re-renders) ───
+  const [removedFeatures, setRemovedFeatures] = useState<Set<string>>(new Set());
+  const [recalculating, setRecalculating] = useState(false);
+  const [priceOverride, setPriceOverride] = useState<{
+    complexity: string;
+    priceRange: string;
+    priceMin: number;
+    priceMax: number;
+    timelineWeeks: string;
+    summary: string;
+    monthlyFrom: string;
+  } | null>(null);
+  const recalcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const customFeatureInputRef = useRef<HTMLInputElement>(null);
@@ -264,6 +277,10 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
   async function handleConfirm() {
     if (!pendingEstimate) return;
 
+    // Reset EstimateCard toggle state for fresh confirmed card
+    setRemovedFeatures(new Set());
+    setPriceOverride(null);
+
     // Get selected feature names
     const selectedFeatures = Array.from(featureSelection.entries())
       .filter(([, selected]) => selected)
@@ -425,23 +442,82 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     );
   }
 
-  // ─── Estimate card ───
-  function EstimateCard({ estimate }: { estimate: EstimateResult }) {
-    // Track which features are toggled off in the estimate card
-    const [removedFeatures, setRemovedFeatures] = useState<Set<string>>(new Set());
-    const [recalculating, setRecalculating] = useState(false);
-    // Override pricing data from recalculation
-    const [priceOverride, setPriceOverride] = useState<{
-      complexity: string;
-      priceRange: string;
-      priceMin: number;
-      priceMax: number;
-      timelineWeeks: string;
-      summary: string;
-      monthlyFrom: string;
-    } | null>(null);
-    const recalcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ─── EstimateCard recalculation logic (at parent level) ───
+  async function recalculatePrice(features: string[]) {
+    if (features.length === 0) return;
+    setRecalculating(true);
+    try {
+      const res = await fetch('/api/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: originalDescription,
+          selectedFeatures: features,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.complexity) {
+        setPriceOverride({
+          complexity: data.complexity,
+          priceRange: data.priceRange,
+          priceMin: data.priceMin,
+          priceMax: data.priceMax,
+          timelineWeeks: data.timelineWeeks,
+          summary: data.summary,
+          monthlyFrom: data.monthlyFrom,
+        });
+        // Update confirmedEstimate for BookingModal
+        setConfirmedEstimate(prev => prev ? {
+          ...prev,
+          complexity: data.complexity,
+          priceRange: data.priceRange,
+          priceMin: data.priceMin,
+          priceMax: data.priceMax,
+          timelineWeeks: data.timelineWeeks,
+          summary: data.summary,
+          monthlyFrom: data.monthlyFrom,
+          features,
+        } : prev);
+      }
+    } catch {
+      // Silently fail — keep current values
+    } finally {
+      setRecalculating(false);
+    }
+  }
 
+  function toggleEstimateFeature(feature: string, allFeatures: string[]) {
+    const newRemoved = new Set(removedFeatures);
+    if (newRemoved.has(feature)) {
+      newRemoved.delete(feature);
+    } else {
+      newRemoved.add(feature);
+    }
+    setRemovedFeatures(newRemoved);
+
+    const newActiveFeatures = allFeatures.filter(f => !newRemoved.has(f));
+
+    // Update confirmedEstimate features immediately for BookingModal
+    setConfirmedEstimate(prev => prev ? { ...prev, features: newActiveFeatures } : prev);
+
+    // Reset override if all features are back
+    if (newRemoved.size === 0) {
+      setPriceOverride(null);
+      if (recalcTimer.current) clearTimeout(recalcTimer.current);
+      return;
+    }
+
+    // Debounce API call for price recalculation (600ms)
+    if (recalcTimer.current) clearTimeout(recalcTimer.current);
+    if (newActiveFeatures.length > 0) {
+      recalcTimer.current = setTimeout(() => {
+        recalculatePrice(newActiveFeatures);
+      }, 600);
+    }
+  }
+
+  // ─── Estimate card (pure render — state lives in parent) ───
+  function EstimateCard({ estimate }: { estimate: EstimateResult }) {
     const activeFeatures = estimate.features.filter(f => !removedFeatures.has(f));
 
     // Display values — use recalculated override when available
@@ -450,83 +526,6 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
     const displayTimeline = priceOverride?.timelineWeeks ?? estimate.timelineWeeks;
     const displaySummary = priceOverride?.summary ?? estimate.summary;
     const displayMonthly = priceOverride?.monthlyFrom ?? estimate.monthlyFrom;
-
-    async function recalculatePrice(features: string[]) {
-      if (features.length === 0) return;
-      setRecalculating(true);
-      try {
-        const res = await fetch('/api/estimate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            description: originalDescription,
-            selectedFeatures: features,
-          }),
-        });
-        const data = await res.json();
-        if (res.ok && data.complexity) {
-          setPriceOverride({
-            complexity: data.complexity,
-            priceRange: data.priceRange,
-            priceMin: data.priceMin,
-            priceMax: data.priceMax,
-            timelineWeeks: data.timelineWeeks,
-            summary: data.summary,
-            monthlyFrom: data.monthlyFrom,
-          });
-          // Update confirmedEstimate for BookingModal
-          if (confirmedEstimate) {
-            setConfirmedEstimate(prev => prev ? {
-              ...prev,
-              complexity: data.complexity,
-              priceRange: data.priceRange,
-              priceMin: data.priceMin,
-              priceMax: data.priceMax,
-              timelineWeeks: data.timelineWeeks,
-              summary: data.summary,
-              monthlyFrom: data.monthlyFrom,
-              features,
-            } : prev);
-          }
-        }
-      } catch {
-        // Silently fail — keep current values
-      } finally {
-        setRecalculating(false);
-      }
-    }
-
-    function toggleEstimateFeature(feature: string) {
-      const newRemoved = new Set(removedFeatures);
-      if (newRemoved.has(feature)) {
-        newRemoved.delete(feature);
-      } else {
-        newRemoved.add(feature);
-      }
-      setRemovedFeatures(newRemoved);
-
-      const newActiveFeatures = estimate.features.filter(f => !newRemoved.has(f));
-
-      // Update confirmedEstimate features immediately for BookingModal
-      if (confirmedEstimate) {
-        setConfirmedEstimate(prev => prev ? { ...prev, features: newActiveFeatures } : prev);
-      }
-
-      // Reset override if all features are back
-      if (newRemoved.size === 0) {
-        setPriceOverride(null);
-        if (recalcTimer.current) clearTimeout(recalcTimer.current);
-        return;
-      }
-
-      // Debounce API call for price recalculation (600ms)
-      if (recalcTimer.current) clearTimeout(recalcTimer.current);
-      if (newActiveFeatures.length > 0) {
-        recalcTimer.current = setTimeout(() => {
-          recalculatePrice(newActiveFeatures);
-        }, 600);
-      }
-    }
 
     return (
       <div className="mt-3 space-y-3">
@@ -576,7 +575,7 @@ export default function PriceEstimator({ compact = false }: PriceEstimatorProps)
                 return (
                   <button
                     key={i}
-                    onClick={() => toggleEstimateFeature(f)}
+                    onClick={() => toggleEstimateFeature(f, estimate.features)}
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all cursor-pointer select-none ${
                       isRemoved
                         ? 'bg-white/5 border-white/10 text-slate line-through opacity-50 hover:border-mint/30 hover:text-mint/70'
