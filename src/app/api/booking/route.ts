@@ -26,6 +26,7 @@ interface BookingPayload {
 interface AnalysisResult {
   analysis: string;
   buildPrompt: string;
+  recommendations: string;
 }
 
 async function callOpus(prompt: string, maxTokens: number): Promise<string | null> {
@@ -88,21 +89,24 @@ Email: ${payload.email}
 Telefon: ${payload.telefon}
 </kontaktinfo>`;
 
-  // Run both AI calls in parallel
-  const [analysisHtml, buildPromptHtml] = await Promise.all([
-    // Note 1: Project analysis
-    callOpus(`Du är en senior teknisk arkitekt på Axuvo. Analysera denna kundkonversation och producera en intern projektanalys.
-
-${contextBlock}
-
-Svara med REN HTML (ingen markdown, inga code blocks). Använd dessa HTML-taggar för formatering:
+  const htmlRules = `Svara med REN HTML (ingen markdown, inga code blocks). Använd dessa HTML-taggar:
 - <h2> för sektionsrubriker
 - <h3> för underrubriker
 - <p> för text
 - <ul>/<li> för listor
 - <strong> för fetstil
 - <table><tr><th><td> för tabeller
-- <hr> för avdelare
+
+VIKTIGT: Skriv ALDRIG tomma <li>-taggar eller <li> med bara mellanslag. Varje <li> MÅSTE ha meningsfullt innehåll. Om du inte har tillräckligt med punkter, skriv färre — aldrig tomma.`;
+
+  // Run all three AI calls in parallel
+  const [analysisHtml, buildPromptHtml, recommendationsHtml] = await Promise.all([
+    // Note 1: Project analysis
+    callOpus(`Du är en senior teknisk arkitekt på Axuvo. Analysera denna kundkonversation och producera en intern projektanalys.
+
+${contextBlock}
+
+${htmlRules}
 
 Producera dessa sektioner:
 
@@ -128,19 +132,15 @@ Tre separata listor:
 <h2>⚠️ Risker och utmaningar</h2>
 4-6 konkreta risker med kort förklaring för varje.
 
-<h2>📅 Rekommendationer inför blueprint-möte</h2>
-- Konkreta frågor att ställa kunden
-- Saker att förbereda (skisser, wireframes, datamodeller)
-- Förslag på mötesagenda
-
-Skriv på svenska. Var konkret och specifik — detta läses av Axuvos utvecklarteam.`, 4000),
+Skriv på svenska. Var konkret och specifik — detta läses av Axuvos utvecklarteam. Inkludera INTE rekommendationer för blueprint-möte — det hanteras separat.`, 3500),
 
     // Note 2: Build prompt
     callOpus(`Du är en senior teknisk arkitekt. Baserat på denna kundkonversation, skriv en komplett BYGGPROMPT som en utvecklare kan ge till en AI-kodassistent (Claude, Cursor, etc.) för att börja bygga appen.
 
 ${contextBlock}
 
-Svara med REN HTML (ingen markdown, inga code blocks). Formatera med <h2>, <h3>, <p>, <ul>/<li>, <pre><code> för kodexempel, <table> för tabeller.
+${htmlRules}
+Använd även <pre><code> för kodexempel.
 
 Byggprompten ska vara PÅ ENGELSKA och innehålla:
 
@@ -161,11 +161,41 @@ Sedan prompten inuti en tydlig <div style="background:#f5f5f5;padding:16px;borde
 10. Deployment instructions
 
 Var extremt detaljerad. En utvecklare ska kunna ta denna prompt och börja bygga direkt utan att behöva gissa.`, 6000),
+
+    // Note 3: Blueprint meeting recommendations
+    callOpus(`Du är en senior teknisk arkitekt och projektledare på Axuvo. Baserat på denna kundkonversation, skriv rekommendationer inför det kommande blueprint-mötet med kunden.
+
+${contextBlock}
+
+${htmlRules}
+
+Producera dessa sektioner:
+
+<h2>📅 Rekommendationer inför blueprint-möte</h2>
+
+<h3>Frågor att ställa kunden</h3>
+6-10 konkreta, specifika frågor baserade på vad kunden har berättat. Fokusera på luckor i deras beskrivning — saker vi behöver veta för att kunna bygga.
+
+<h3>Att förbereda innan mötet</h3>
+Konkreta saker teamet bör ta fram:
+- Skisser, wireframes, eller prototyper
+- Datamodeller
+- Integrationsunderlag
+- Referensprojekt att visa kunden
+
+<h3>Förslag på mötesagenda</h3>
+En punktlista med tidsfördelning (t.ex. "15 min — Genomgång av kundens vision").
+
+<h3>Nästa steg efter mötet</h3>
+Vad som bör levereras till kunden efter blueprint-mötet (t.ex. projektplan, detaljerad offert, tidsplan).
+
+Skriv på svenska. Var konkret och specifik — detta läses av Axuvos säljteam och utvecklarteam.`, 2500),
   ]);
 
   return {
     analysis: analysisHtml || '<p><em>AI-analys kunde inte genereras</em></p>',
     buildPrompt: buildPromptHtml || '<p><em>Byggprompt kunde inte genereras</em></p>',
+    recommendations: recommendationsHtml || '<p><em>Rekommendationer kunde inte genereras</em></p>',
   };
 }
 
@@ -344,10 +374,11 @@ async function processLeadInBackground(body: BookingPayload) {
       // Create deal first
       const dealId = await createDeal(body, contactId);
 
-      // Create two separate notes in parallel
+      // Create three separate notes in parallel
       await Promise.all([
         createNote(analysisResult.analysis, 'Projektanalys', contactId, dealId),
         createNote(analysisResult.buildPrompt, 'Byggprompt', contactId, dealId),
+        createNote(analysisResult.recommendations, 'Blueprint-rekommendationer', contactId, dealId),
       ]);
 
       console.log(`Background: Lead fully processed — contact ${contactId}, deal ${dealId}`);
