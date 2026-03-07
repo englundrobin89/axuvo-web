@@ -25,7 +25,7 @@ interface BookingPayload {
 
 interface AnalysisResult {
   analysis: string;
-  buildPrompt: string;
+  agentPrompt: string;
   recommendations: string;
 }
 
@@ -134,33 +134,52 @@ Tre separata listor:
 
 Skriv på svenska. Var konkret och specifik — detta läses av Axuvos utvecklarteam. Inkludera INTE rekommendationer för blueprint-möte — det hanteras separat.`, 3500),
 
-    // Note 2: Build prompt
-    callOpus(`Du är en senior teknisk arkitekt. Baserat på denna kundkonversation, skriv en komplett BYGGPROMPT som en utvecklare kan ge till en AI-kodassistent (Claude, Cursor, etc.) för att börja bygga appen.
+    // Note 2: AI agent prompt for meeting preparation
+    callOpus(`Du är en senior teknisk arkitekt och projektledare på Axuvo. Din uppgift är att skapa en KOMPLETT PROMPT som vi kan ge till en AI-agent (t.ex. Claude) som ska hjälpa oss förbereda inför blueprint-mötet med kunden.
 
 ${contextBlock}
 
 ${htmlRules}
-Använd även <pre><code> för kodexempel.
+Använd även <pre><code> för prompttext.
 
-Byggprompten ska vara PÅ ENGELSKA och innehålla:
+Prompten ska innehålla ALL kontext som AI-agenten behöver för att kunna hjälpa oss. Den ska vara skriven så att agenten kan:
+- Generera wireframes/skisser (beskrivna textuellt)
+- Ta fram en datamodell
+- Skriva en mötesagenda
+- Förbereda demo-scenarion
+- Svara på tekniska frågor om projektet
+- Hjälpa oss skriva en offert
 
-<h2>🔧 Build Prompt</h2>
-<p><em>Ready-to-use prompt for AI code assistant</em></p>
+Formatera så här:
 
-Sedan prompten inuti en tydlig <div style="background:#f5f5f5;padding:16px;border-radius:8px;border:1px solid #ddd;">:
+<h2>🤖 AI-agentprompt — Mötesförberedelse</h2>
+<p><em>Kopiera denna prompt till en AI-agent för att förbereda blueprint-mötet</em></p>
 
-1. Project overview and goals
-2. Tech stack with specific versions
-3. Database schema — tabeller, kolumner, relationer, constraints (visa som tabell eller kodblock)
-4. API endpoints — method, path, description, request/response (visa som tabell)
-5. Frontend component tree / structure
-6. Authentication flow (steg för steg)
-7. Complete feature list with acceptance criteria
-8. File/folder structure
-9. Environment variables needed
-10. Deployment instructions
+<div style="background:#f5f5f5;padding:16px;border-radius:8px;border:1px solid #ddd;">
 
-Var extremt detaljerad. En utvecklare ska kunna ta denna prompt och börja bygga direkt utan att behöva gissa.`, 6000),
+Prompten (PÅ SVENSKA) ska inkludera:
+
+1. <strong>Rollbeskrivning</strong> — Vem AI-agenten är och vad den ska hjälpa med
+2. <strong>Kundkontext</strong> — Allt vi vet om kunden: namn, företag, kontaktuppgifter, vad de vill bygga, deras mål och behov. Inkludera hela konversationen ordagrant.
+3. <strong>Projektöversikt</strong> — Sammanfattning av projektet, komplexitetsnivå, prisintervall, tidsuppskattning
+4. <strong>Teknisk specifikation</strong> — Rekommenderad arkitektur, tech stack, databas, integrationer, autentisering
+5. <strong>Funktionslista</strong> — Alla funktioner kunden valt, plus förslag på ytterligare funktioner med motivering
+6. <strong>Risker och utmaningar</strong> — Konkreta risker vi identifierat
+7. <strong>Förberedelser agenten ska hjälpa med</strong>:
+   - Skapa wireframe-beskrivningar för varje vy/sida
+   - Ta fram databasschema (tabeller, relationer, constraints)
+   - Skriva API-specifikation (endpoints, metoder, request/response)
+   - Föreslå komponentstruktur för frontend
+   - Skriva mötesagenda med tidsfördelning
+   - Förbereda frågor att ställa kunden
+   - Skissa på en offertmall med prisuppdelning per funktion
+8. <strong>Outputformat</strong> — Beskriv hur agenten ska strukturera sina svar
+
+</div>
+
+Var EXTREMT detaljerad med kundkontexten — inkludera all information från konversationen. AI-agenten ska kunna arbeta helt autonomt utan att behöva ställa frågor tillbaka.
+
+Skriv prompten på svenska.`, 8000),
 
     // Note 3: Blueprint meeting recommendations
     callOpus(`Du är en senior teknisk arkitekt och projektledare på Axuvo. Baserat på denna kundkonversation, skriv rekommendationer inför det kommande blueprint-mötet med kunden.
@@ -194,7 +213,7 @@ Skriv på svenska. Var konkret och specifik — detta läses av Axuvos säljteam
 
   return {
     analysis: analysisHtml || '<p><em>AI-analys kunde inte genereras</em></p>',
-    buildPrompt: buildPromptHtml || '<p><em>Byggprompt kunde inte genereras</em></p>',
+    agentPrompt: buildPromptHtml || '<p><em>AI-agentprompt kunde inte genereras</em></p>',
     recommendations: recommendationsHtml || '<p><em>Rekommendationer kunde inte genereras</em></p>',
   };
 }
@@ -377,7 +396,7 @@ async function processLeadInBackground(body: BookingPayload) {
       // Create three separate notes in parallel
       await Promise.all([
         createNote(analysisResult.analysis, 'Projektanalys', contactId, dealId),
-        createNote(analysisResult.buildPrompt, 'Byggprompt', contactId, dealId),
+        createNote(analysisResult.agentPrompt, 'AI-agentprompt — Mötesförberedelse', contactId, dealId),
         createNote(analysisResult.recommendations, 'Blueprint-rekommendationer', contactId, dealId),
       ]);
 
